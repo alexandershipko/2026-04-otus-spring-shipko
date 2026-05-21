@@ -15,33 +15,6 @@ public class TestServiceImpl implements TestService {
 
     private final QuestionDao questionDao;
 
-//    @Override
-//    public TestResult executeTestFor(Student student) {
-//        ioService.printLine("");
-//        ioService.printFormattedLine("Please answer the questions below%n");
-//        var questions = questionDao.findAll();
-//        var testResult = new TestResult(student);
-//
-//        int i = 1;
-//        for (var question: questions) {
-//            ioService.printFormattedLine("%d. %s", i++, question.text());
-//
-//            List<Answer> answers = question.answers();
-//
-//            for (int j = 0; j < answers.size(); j++) {
-//                ioService.printFormattedLine("   %d) %s", j + 1, answers.get(j).text());
-//            }
-//            int answerNum =  ioService.readIntForRangeWithPrompt(1,
-//                    question.answers().size(),
-//                    "Enter the answer number", "Error during reading int value, try again");
-//            var isAnswerValid = question.answers().get(answerNum - 1).isCorrect();
-//            testResult.applyAnswer(question, isAnswerValid);
-//            ioService.printLine("");
-//        }
-//
-//        return testResult;
-//    }
-
     @Override
     public TestResult executeTestFor(Student student) {
         ioService.printLine("");
