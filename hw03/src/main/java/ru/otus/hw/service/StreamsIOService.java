@@ -1,6 +1,5 @@
 package ru.otus.hw.service;
 
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -16,15 +15,10 @@ public class StreamsIOService implements IOService {
 
     private final Scanner scanner;
 
-    private final LocalizedMessagesService localizedMessagesService;
-
     public StreamsIOService(@Value("#{T(System).out}") PrintStream printStream,
-                            @Value("#{T(System).in}") InputStream inputStream,
-                            @Qualifier("localizedMessagesServiceImpl")
-                            LocalizedMessagesService localizedMessagesService) {
+                            @Value("#{T(System).in}") InputStream inputStream) {
         this.printStream = printStream;
         this.scanner = new Scanner(inputStream);
-        this.localizedMessagesService = localizedMessagesService;
     }
 
     @Override
@@ -62,8 +56,7 @@ public class StreamsIOService implements IOService {
                 printLine(errorMessage);
             }
         }
-        throw new IllegalArgumentException(
-                localizedMessagesService.getMessage("Error.error.during.reading.int.value"));
+        throw new IllegalArgumentException("Error during reading int value");
     }
 
     @Override

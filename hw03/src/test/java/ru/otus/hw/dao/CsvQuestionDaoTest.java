@@ -4,25 +4,18 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import ru.otus.hw.config.TestFileNameProvider;
 import ru.otus.hw.domain.Answer;
 import ru.otus.hw.domain.Question;
 import ru.otus.hw.exceptions.QuestionReadException;
-import ru.otus.hw.service.LocalizedMessagesService;
 
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.when;
 
 @SpringBootTest
 class CsvQuestionDaoTest {
-
-    @MockitoBean(name = "localizedMessagesServiceImpl")
-    private LocalizedMessagesService localizedMessagesService;
 
     @Autowired
     private CsvQuestionDao csvQuestionDao;
@@ -56,13 +49,12 @@ class CsvQuestionDaoTest {
     @Test
     @DisplayName("throw QuestionReadException when file not found")
     void shouldThrowExceptionWhenFileNotFound() {
-        when(localizedMessagesService.getMessage(anyString(), any())).thenReturn("file not found");
-        CsvQuestionDao daoWithMissingFile =
-                new CsvQuestionDao(() -> "non_existent_file.csv", localizedMessagesService);
+        TestFileNameProvider missingFileProvider = () -> "non_existent_file.csv";
+        csvQuestionDao = new CsvQuestionDao(missingFileProvider);
 
-        assertThatThrownBy(daoWithMissingFile::findAll)
+        assertThatThrownBy(csvQuestionDao::findAll)
                 .isInstanceOf(QuestionReadException.class)
-                .hasMessageContaining("file not found");
+                .hasMessageContaining("Failed to parse CSV file: non_existent_file.csv");
     }
 
 }
