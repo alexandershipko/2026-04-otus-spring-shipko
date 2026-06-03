@@ -8,7 +8,6 @@ import java.util.Locale;
 import java.util.Map;
 
 @Setter
-
 @ConfigurationProperties(prefix = "test")
 public class AppProperties implements TestConfig, TestFileNameProvider, LocaleConfig {
 
