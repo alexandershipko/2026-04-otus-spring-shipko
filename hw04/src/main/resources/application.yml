@@ -12,8 +12,8 @@ spring:
 
 test:
   rightAnswersCountToPass: 3
-  #locale: en-US
-  locale: ru-RU
+  locale: en-US
+  #locale: ru-RU
   fileNameByLocaleTag:
     ru-RU: questions_ru.csv
     en-US: questions.csv
