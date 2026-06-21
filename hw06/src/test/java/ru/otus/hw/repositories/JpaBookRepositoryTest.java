@@ -7,6 +7,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.context.annotation.Import;
 import ru.otus.hw.models.Author;
 import ru.otus.hw.models.Book;
@@ -17,10 +18,13 @@ import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@DisplayName("Репозиторий на основе Jdbc для работы с книгами ")
-@Import({JpaBookRepository.class, JpaGenreRepository.class})
+@DisplayName("Репозиторий на основе Jpa для работы с книгами")
+@Import(JpaBookRepository.class)
 @DataJpaTest
 class JpaBookRepositoryTest {
+
+    @Autowired
+    private TestEntityManager tem;
 
     @Autowired
     private JpaBookRepository repositoryJpa;
@@ -43,6 +47,7 @@ class JpaBookRepositoryTest {
     @MethodSource("getDbBooks")
     void shouldReturnCorrectBookById(Book expectedBook) {
         var actualBook = repositoryJpa.findById(expectedBook.getId());
+
         assertThat(actualBook).isPresent()
                 .get()
                 .isEqualTo(expectedBook);
@@ -55,7 +60,6 @@ class JpaBookRepositoryTest {
         var expectedBooks = dbBooks;
 
         assertThat(actualBooks).containsExactlyElementsOf(expectedBooks);
-        actualBooks.forEach(System.out::println);
     }
 
     @DisplayName("должен сохранять новую книгу")
@@ -64,13 +68,17 @@ class JpaBookRepositoryTest {
         var expectedBook = new Book(0, "BookTitle_10500", dbAuthors.get(0),
                 List.of(dbGenres.get(0), dbGenres.get(2)));
         var returnedBook = repositoryJpa.save(expectedBook);
+
         assertThat(returnedBook).isNotNull()
                 .matches(book -> book.getId() > 0)
                 .usingRecursiveComparison().ignoringExpectedNullFields().isEqualTo(expectedBook);
 
-        assertThat(repositoryJpa.findById(returnedBook.getId()))
-                .isPresent()
-                .get()
+        tem.flush();
+        tem.clear();
+
+        var foundBook = tem.find(Book.class, returnedBook.getId());
+
+        assertThat(foundBook).isNotNull()
                 .isEqualTo(returnedBook);
     }
 
@@ -80,28 +88,37 @@ class JpaBookRepositoryTest {
         var expectedBook = new Book(1L, "BookTitle_10500", dbAuthors.get(2),
                 List.of(dbGenres.get(4), dbGenres.get(5)));
 
-        assertThat(repositoryJpa.findById(expectedBook.getId()))
-                .isPresent()
-                .get()
+        assertThat(tem.find(Book.class, expectedBook.getId()))
+                .isNotNull()
+                .usingRecursiveComparison()
                 .isNotEqualTo(expectedBook);
 
         var returnedBook = repositoryJpa.save(expectedBook);
+
         assertThat(returnedBook).isNotNull()
                 .matches(book -> book.getId() > 0)
                 .usingRecursiveComparison().ignoringExpectedNullFields().isEqualTo(expectedBook);
 
-        assertThat(repositoryJpa.findById(returnedBook.getId()))
-                .isPresent()
-                .get()
+        tem.flush();
+        tem.clear();
+
+        var foundBook = tem.find(Book.class, returnedBook.getId());
+
+        assertThat(foundBook).isNotNull()
                 .isEqualTo(returnedBook);
     }
 
-    @DisplayName("должен удалять книгу по id ")
+    @DisplayName("должен удалять книгу по id")
     @Test
     void shouldDeleteBook() {
-        assertThat(repositoryJpa.findById(1L)).isPresent();
+        assertThat(tem.find(Book.class, 1L)).isNotNull();
+
         repositoryJpa.deleteById(1L);
-        assertThat(repositoryJpa.findById(1L)).isEmpty();
+
+        tem.flush();
+        tem.clear();
+
+        assertThat(tem.find(Book.class, 1L)).isNull();
     }
 
     private static List<Author> getDbAuthors() {
@@ -129,6 +146,8 @@ class JpaBookRepositoryTest {
     private static List<Book> getDbBooks() {
         var dbAuthors = getDbAuthors();
         var dbGenres = getDbGenres();
+
         return getDbBooks(dbAuthors, dbGenres);
     }
+
 }

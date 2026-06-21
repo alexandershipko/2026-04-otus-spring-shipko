@@ -2,6 +2,7 @@ package ru.otus.hw.repositories;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import ru.otus.hw.logging.TrackTime;
 import ru.otus.hw.models.Genre;
@@ -10,14 +11,11 @@ import java.util.List;
 import java.util.Set;
 
 @Repository
+@RequiredArgsConstructor
 public class JpaGenreRepository implements GenreRepository {
 
     @PersistenceContext
     private final EntityManager em;
-
-    public JpaGenreRepository(EntityManager em) {
-        this.em = em;
-    }
 
     @Override
     @TrackTime

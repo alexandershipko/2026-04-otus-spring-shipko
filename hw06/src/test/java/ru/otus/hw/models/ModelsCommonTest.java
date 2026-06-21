@@ -35,9 +35,9 @@ class ModelsCommonTest {
     @ParameterizedTest
     @MethodSource("getEntities")
     void shouldBeNoOneToOneRelationshipsInModelClasses(Class<?> entityClass) {
-
         var oneToOneRelationshipExists = Arrays.stream(entityClass.getDeclaredFields())
                 .anyMatch(f -> f.isAnnotationPresent(OneToOne.class));
+
         assertThat(oneToOneRelationshipExists)
                 .withFailMessage("В доменной модели ДЗ не предусмотрены связи OneToOne")
                 .isFalse();
@@ -50,6 +50,7 @@ class ModelsCommonTest {
                 .map(f -> getRelationAnnotationArgumentValue(f, "fetch", FetchType.class))
                 .filter(Objects::nonNull)
                 .anyMatch(fetchType -> fetchType.equals(FetchType.EAGER));
+
         assertThat(eagerFetchExists)
                 .withFailMessage("Лучше все связи сделать LAZY")
                 .isFalse();
@@ -63,9 +64,11 @@ class ModelsCommonTest {
                 .anyMatch(relationEntry -> {
                     var reverseRelations = findAllRelationsEntry(relationEntry.getKey());
                     var reverseRelationField = reverseRelations.get(entityClass);
+
                     if (isNull(reverseRelationField)) {
                         return false;
                     }
+
                     var relationFieldName = relationEntry.getValue().getName();
                     var reverseRelationFieldName = reverseRelationField.getName();
                     var mappedByValue = getRelationAnnotationArgumentValue(relationEntry.getValue(),
@@ -79,7 +82,6 @@ class ModelsCommonTest {
         assertThat(hasBidirectionalRelationshipsWithoutMappedBy)
                 .withFailMessage("Двунаправленные связи должны быть настроены с помощью mappedBy")
                 .isFalse();
-
     }
 
     private static Stream<Arguments> getEntities() {
@@ -105,11 +107,13 @@ class ModelsCommonTest {
 
     private Class<?> fieldToClass(Field field) {
         var className = field.getType().getName();
+
         if (Collection.class.isAssignableFrom(field.getType())) {
             className = field.getGenericType().getTypeName()
                     .split("<")[1].split(">")[0];
 
         }
+
         try {
             return Class.forName(className);
         } catch (ClassNotFoundException e) {

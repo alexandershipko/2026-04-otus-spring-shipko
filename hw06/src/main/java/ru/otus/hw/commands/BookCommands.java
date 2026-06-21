@@ -36,6 +36,7 @@ public class BookCommands {
     @ShellMethod(value = "Insert book", key = "bins")
     public String insertBook(String title, long authorId, Set<Long> genresIds) {
         var savedBook = bookService.insert(title, authorId, genresIds);
+
         return bookConverter.bookToString(savedBook);
     }
 
@@ -43,6 +44,7 @@ public class BookCommands {
     @ShellMethod(value = "Update book", key = "bupd")
     public String updateBook(long id, String title, long authorId, Set<Long> genresIds) {
         var savedBook = bookService.update(id, title, authorId, genresIds);
+
         return bookConverter.bookToString(savedBook);
     }
 
@@ -51,4 +53,5 @@ public class BookCommands {
     public void deleteBook(long id) {
         bookService.deleteById(id);
     }
+
 }
