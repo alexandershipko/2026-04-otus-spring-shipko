@@ -7,6 +7,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 import ru.otus.hw.models.Genre;
 
+import java.util.List;
 import java.util.Set;
 import java.util.stream.IntStream;
 
@@ -29,7 +30,9 @@ class JpaGenreRepositoryTest {
 
         var actualGenres = repositoryJpa.findAll();
 
-        assertThat(actualGenres).containsExactlyElementsOf(expectedGenres);
+        assertThat(actualGenres)
+                .usingRecursiveComparison()
+                .isEqualTo(expectedGenres);
     }
 
     @DisplayName("должен загружать жанры по набору id")
@@ -37,9 +40,15 @@ class JpaGenreRepositoryTest {
     void shouldReturnCorrectGenresByIds() {
         var actualGenres = repositoryJpa.findAllByIds(Set.of(1L, 3L, 5L));
 
-        assertThat(actualGenres).hasSize(3)
-                .extracting(Genre::getName)
-                .containsExactlyInAnyOrder("Genre_1", "Genre_3", "Genre_5");
+        var expectedGenres = List.of(
+                new Genre(1, "Genre_1"),
+                new Genre(3, "Genre_3"),
+                new Genre(5, "Genre_5"));
+
+        assertThat(actualGenres)
+                .usingRecursiveComparison()
+                .ignoringCollectionOrder()
+                .isEqualTo(expectedGenres);
     }
 
     @DisplayName("должен возвращать пустой список для несуществующих id")

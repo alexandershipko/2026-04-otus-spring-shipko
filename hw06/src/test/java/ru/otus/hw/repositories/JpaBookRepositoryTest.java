@@ -50,6 +50,7 @@ class JpaBookRepositoryTest {
 
         assertThat(actualBook).isPresent()
                 .get()
+                .usingRecursiveComparison()
                 .isEqualTo(expectedBook);
     }
 
@@ -59,7 +60,9 @@ class JpaBookRepositoryTest {
         var actualBooks = repositoryJpa.findAll();
         var expectedBooks = dbBooks;
 
-        assertThat(actualBooks).containsExactlyElementsOf(expectedBooks);
+        assertThat(actualBooks)
+                .usingRecursiveComparison()
+                .isEqualTo(expectedBooks);
     }
 
     @DisplayName("должен сохранять новую книгу")
@@ -73,12 +76,10 @@ class JpaBookRepositoryTest {
                 .matches(book -> book.getId() > 0)
                 .usingRecursiveComparison().ignoringExpectedNullFields().isEqualTo(expectedBook);
 
-        tem.flush();
-        tem.clear();
-
         var foundBook = tem.find(Book.class, returnedBook.getId());
 
         assertThat(foundBook).isNotNull()
+                .usingRecursiveComparison()
                 .isEqualTo(returnedBook);
     }
 
@@ -99,12 +100,10 @@ class JpaBookRepositoryTest {
                 .matches(book -> book.getId() > 0)
                 .usingRecursiveComparison().ignoringExpectedNullFields().isEqualTo(expectedBook);
 
-        tem.flush();
-        tem.clear();
-
         var foundBook = tem.find(Book.class, returnedBook.getId());
 
         assertThat(foundBook).isNotNull()
+                .usingRecursiveComparison()
                 .isEqualTo(returnedBook);
     }
 
@@ -114,9 +113,6 @@ class JpaBookRepositoryTest {
         assertThat(tem.find(Book.class, 1L)).isNotNull();
 
         repositoryJpa.deleteById(1L);
-
-        tem.flush();
-        tem.clear();
 
         assertThat(tem.find(Book.class, 1L)).isNull();
     }

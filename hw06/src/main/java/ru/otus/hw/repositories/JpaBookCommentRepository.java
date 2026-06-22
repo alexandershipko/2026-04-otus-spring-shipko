@@ -2,6 +2,7 @@ package ru.otus.hw.repositories;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.TypedQuery;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import ru.otus.hw.models.BookComment;
@@ -18,13 +19,20 @@ public class JpaBookCommentRepository implements BookCommentRepository {
 
     @Override
     public Optional<BookComment> findById(long id) {
-        return Optional.ofNullable(em.find(BookComment.class, id));
+        TypedQuery<BookComment> query = em.createQuery(
+                "select bc from BookComment bc left join fetch bc.book where bc.id = :id",
+                BookComment.class);
+        query.setParameter("id", id);
+
+        return query.getResultList().stream().findFirst();
     }
 
     @Override
     public List<BookComment> findAllByBookId(long bookId) {
-        var query = em.createQuery("select bc from BookComment bc where bc.book.id = :bookId", BookComment.class)
-                .setParameter("bookId", bookId);
+        TypedQuery<BookComment> query = em.createQuery(
+                "select bc from BookComment bc left join fetch bc.book where bc.book.id = :bookId",
+                BookComment.class);
+        query.setParameter("bookId", bookId);
 
         return query.getResultList();
     }

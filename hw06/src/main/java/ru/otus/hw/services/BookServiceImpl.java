@@ -39,22 +39,6 @@ public class BookServiceImpl implements BookService {
     @Override
     @Transactional
     public Book insert(String title, long authorId, Set<Long> genresIds) {
-        return save(0, title, authorId, genresIds);
-    }
-
-    @Override
-    @Transactional
-    public Book update(long id, String title, long authorId, Set<Long> genresIds) {
-        return save(id, title, authorId, genresIds);
-    }
-
-    @Override
-    @Transactional
-    public void deleteById(long id) {
-        bookRepository.deleteById(id);
-    }
-
-    private Book save(long id, String title, long authorId, Set<Long> genresIds) {
         if (isEmpty(genresIds)) {
             throw new IllegalArgumentException("Genres ids must not be null");
         }
@@ -67,9 +51,39 @@ public class BookServiceImpl implements BookService {
             throw new EntityNotFoundException("One or all genres with ids %s not found".formatted(genresIds));
         }
 
-        var book = new Book(id, title, author, genres);
+        var book = new Book(0, title, author, genres);
 
         return bookRepository.save(book);
+    }
+
+    @Override
+    @Transactional
+    public Book update(long id, String title, long authorId, Set<Long> genresIds) {
+        if (isEmpty(genresIds)) {
+            throw new IllegalArgumentException("Genres ids must not be null");
+        }
+
+        var book = bookRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Book with id %d not found".formatted(id)));
+        var author = authorRepository.findById(authorId)
+                .orElseThrow(() -> new EntityNotFoundException("Author with id %d not found".formatted(authorId)));
+        var genres = genreRepository.findAllByIds(genresIds);
+
+        if (isEmpty(genres) || genresIds.size() != genres.size()) {
+            throw new EntityNotFoundException("One or all genres with ids %s not found".formatted(genresIds));
+        }
+
+        book.setTitle(title);
+        book.setAuthor(author);
+        book.setGenres(genres);
+
+        return bookRepository.save(book);
+    }
+
+    @Override
+    @Transactional
+    public void deleteById(long id) {
+        bookRepository.deleteById(id);
     }
 
 }

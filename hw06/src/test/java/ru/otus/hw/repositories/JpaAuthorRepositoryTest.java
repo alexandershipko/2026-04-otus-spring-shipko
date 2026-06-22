@@ -31,6 +31,7 @@ class JpaAuthorRepositoryTest {
 
         assertThat(actualAuthor).isPresent()
                 .get()
+                .usingRecursiveComparison()
                 .isEqualTo(expectedAuthor);
     }
 
@@ -51,7 +52,9 @@ class JpaAuthorRepositoryTest {
 
         var actualAuthors = repositoryJpa.findAll();
 
-        assertThat(actualAuthors).containsExactlyElementsOf(expectedAuthors);
+        assertThat(actualAuthors)
+                .usingRecursiveComparison()
+                .isEqualTo(expectedAuthors);
     }
 
 }

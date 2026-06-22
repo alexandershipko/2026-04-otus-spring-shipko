@@ -12,7 +12,7 @@ public interface BookCommentService {
 
     BookComment insert(String text, long bookId);
 
-    BookComment update(long id, String text, long bookId);
+    BookComment update(long id, String text);
 
     void deleteById(long id);
 }

@@ -31,7 +31,7 @@ import java.util.List;
 @ToString(exclude = {"author", "genres"})
 @EqualsAndHashCode(exclude = {"author", "genres"})
 @NamedEntityGraph(name = "book-entity-graph",
-        attributeNodes = { @NamedAttributeNode("author"), @NamedAttributeNode("genres") })
+        attributeNodes = { @NamedAttributeNode("author") })
 public class Book {
 
     @Id

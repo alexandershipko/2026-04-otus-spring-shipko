@@ -30,6 +30,7 @@ class JpaBookCommentRepositoryTest {
 
         assertThat(actualComment).isPresent()
                 .get()
+                .usingRecursiveComparison()
                 .isEqualTo(expectedComment);
     }
 
@@ -51,15 +52,14 @@ class JpaBookCommentRepositoryTest {
         var returnedComment = repositoryJpa.save(expectedComment);
 
         assertThat(returnedComment).isNotNull()
-                .matches(c -> c.getId() > 0);
-
-        tem.flush();
-        tem.clear();
+                .matches(c -> c.getId() > 0)
+                .usingRecursiveComparison().ignoringExpectedNullFields().isEqualTo(expectedComment);
 
         var foundComment = tem.find(BookComment.class, returnedComment.getId());
 
         assertThat(foundComment).isNotNull()
-                .matches(c -> c.getText().equals("New comment"));
+                .usingRecursiveComparison()
+                .isEqualTo(returnedComment);
     }
 
     @DisplayName("должен сохранять измененный комментарий")
@@ -70,13 +70,11 @@ class JpaBookCommentRepositoryTest {
 
         repositoryJpa.save(expectedComment);
 
-        tem.flush();
-        tem.clear();
-
         var foundComment = tem.find(BookComment.class, 1L);
 
         assertThat(foundComment).isNotNull()
-                .matches(c -> c.getText().equals("Updated comment"));
+                .usingRecursiveComparison()
+                .isEqualTo(expectedComment);
     }
 
     @DisplayName("должен удалять комментарий по id")
@@ -85,9 +83,6 @@ class JpaBookCommentRepositoryTest {
         assertThat(tem.find(BookComment.class, 1L)).isNotNull();
 
         repositoryJpa.deleteById(1L);
-
-        tem.flush();
-        tem.clear();
 
         assertThat(tem.find(BookComment.class, 1L)).isNull();
     }
