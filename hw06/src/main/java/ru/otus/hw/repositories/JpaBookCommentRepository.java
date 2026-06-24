@@ -1,5 +1,6 @@
 package ru.otus.hw.repositories;
 
+import jakarta.persistence.EntityGraph;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
@@ -10,6 +11,8 @@ import ru.otus.hw.models.BookComment;
 import java.util.List;
 import java.util.Optional;
 
+import static org.springframework.data.jpa.repository.EntityGraph.EntityGraphType.FETCH;
+
 @Repository
 @RequiredArgsConstructor
 public class JpaBookCommentRepository implements BookCommentRepository {
@@ -19,20 +22,24 @@ public class JpaBookCommentRepository implements BookCommentRepository {
 
     @Override
     public Optional<BookComment> findById(long id) {
+        EntityGraph<?> graph = em.getEntityGraph("book-comment-book-graph");
         TypedQuery<BookComment> query = em.createQuery(
-                "select bc from BookComment bc left join fetch bc.book where bc.id = :id",
+                "select bc from BookComment bc where bc.id = :id",
                 BookComment.class);
         query.setParameter("id", id);
+        query.setHint(FETCH.getKey(), graph);
 
         return query.getResultList().stream().findFirst();
     }
 
     @Override
     public List<BookComment> findAllByBookId(long bookId) {
+        EntityGraph<?> graph = em.getEntityGraph("book-comment-book-graph");
         TypedQuery<BookComment> query = em.createQuery(
-                "select bc from BookComment bc left join fetch bc.book where bc.book.id = :bookId",
+                "select bc from BookComment bc where bc.book.id = :bookId",
                 BookComment.class);
         query.setParameter("bookId", bookId);
+        query.setHint(FETCH.getKey(), graph);
 
         return query.getResultList();
     }

@@ -12,6 +12,7 @@ import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.NamedAttributeNode;
 import jakarta.persistence.NamedEntityGraph;
+import jakarta.persistence.NamedEntityGraphs;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -30,8 +31,12 @@ import java.util.List;
 @Table(name = "books")
 @ToString(exclude = {"author", "genres"})
 @EqualsAndHashCode(exclude = {"author", "genres"})
-@NamedEntityGraph(name = "book-entity-graph",
-        attributeNodes = { @NamedAttributeNode("author") })
+@NamedEntityGraphs({
+        @NamedEntityGraph(name = "book-author-graph",
+                attributeNodes = {@NamedAttributeNode("author")}),
+        @NamedEntityGraph(name = "book-author-genres-graph",
+                attributeNodes = {@NamedAttributeNode("author"), @NamedAttributeNode("genres")})
+})
 public class Book {
 
     @Id

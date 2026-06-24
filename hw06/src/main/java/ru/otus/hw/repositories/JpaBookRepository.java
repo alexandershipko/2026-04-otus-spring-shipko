@@ -23,9 +23,9 @@ public class JpaBookRepository implements BookRepository {
 
     @Override
     public Optional<Book> findById(long id) {
-        EntityGraph<?> graph = em.getEntityGraph("book-entity-graph");
+        EntityGraph<?> graph = em.getEntityGraph("book-author-genres-graph");
         TypedQuery<Book> query = em.createQuery(
-                "select b from Book b left join fetch b.genres where b.id = :id", Book.class);
+                "select b from Book b where b.id = :id", Book.class);
         query.setParameter("id", id);
         query.setHint(FETCH.getKey(), graph);
 
@@ -35,9 +35,9 @@ public class JpaBookRepository implements BookRepository {
     @Override
     @TrackTime
     public List<Book> findAll() {
-        EntityGraph<?> graph = em.getEntityGraph("book-entity-graph");
+        EntityGraph<?> graph = em.getEntityGraph("book-author-graph");
         TypedQuery<Book> query = em.createQuery(
-                "select distinct b from Book b left join fetch b.genres", Book.class);
+                "select b from Book b", Book.class);
         query.setHint(FETCH.getKey(), graph);
 
         return query.getResultList();
