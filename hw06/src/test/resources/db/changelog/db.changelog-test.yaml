@@ -1,0 +1,9 @@
+databaseChangeLog:
+  - include:
+      file: db/changelog/1.0/2026-06-19--0001-schema.yaml
+  - include:
+      file: db/changelog/1.0/2026-06-19--0001-test-data.yaml
+  - include:
+      file: db/changelog/2.0/2026-06-21--0001-schema.yaml
+  - include:
+      file: db/changelog/2.0/2026-06-21--0001-test-data.yaml
