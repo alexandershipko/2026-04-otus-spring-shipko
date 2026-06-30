@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
-import org.springframework.context.annotation.Import;
 import ru.otus.hw.models.Author;
 
 import java.util.stream.IntStream;
@@ -13,7 +12,6 @@ import java.util.stream.IntStream;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DisplayName("Репозиторий на основе Jpa для работы с авторами")
-@Import(JpaAuthorRepository.class)
 @DataJpaTest
 class JpaAuthorRepositoryTest {
 
@@ -21,13 +19,13 @@ class JpaAuthorRepositoryTest {
     private TestEntityManager tem;
 
     @Autowired
-    private JpaAuthorRepository repositoryJpa;
+    private AuthorRepository repository;
 
     @DisplayName("должен загружать автора по id")
     @Test
     void shouldReturnCorrectAuthorById() {
         var expectedAuthor = tem.find(Author.class, 1L);
-        var actualAuthor = repositoryJpa.findById(1L);
+        var actualAuthor = repository.findById(1L);
 
         assertThat(actualAuthor).isPresent()
                 .get()
@@ -38,7 +36,7 @@ class JpaAuthorRepositoryTest {
     @DisplayName("должен возвращать пустой Optional для несуществующего id")
     @Test
     void shouldReturnEmptyForNonExistingId() {
-        var actualAuthor = repositoryJpa.findById(99L);
+        var actualAuthor = repository.findById(99L);
 
         assertThat(actualAuthor).isEmpty();
     }
@@ -50,7 +48,7 @@ class JpaAuthorRepositoryTest {
                 .map(id -> new Author(id, "Author_" + id))
                 .toList();
 
-        var actualAuthors = repositoryJpa.findAll();
+        var actualAuthors = repository.findAll();
 
         assertThat(actualAuthors)
                 .usingRecursiveComparison()

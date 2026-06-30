@@ -8,7 +8,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
-import org.springframework.context.annotation.Import;
 import ru.otus.hw.models.Author;
 import ru.otus.hw.models.Book;
 import ru.otus.hw.models.Genre;
@@ -19,7 +18,6 @@ import java.util.stream.IntStream;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DisplayName("Репозиторий на основе Jpa для работы с книгами")
-@Import(JpaBookRepository.class)
 @DataJpaTest
 class JpaBookRepositoryTest {
 
@@ -27,7 +25,7 @@ class JpaBookRepositoryTest {
     private TestEntityManager tem;
 
     @Autowired
-    private JpaBookRepository repositoryJpa;
+    private BookRepository repository;
 
     private List<Author> dbAuthors;
 
@@ -46,7 +44,7 @@ class JpaBookRepositoryTest {
     @ParameterizedTest
     @MethodSource("getDbBooks")
     void shouldReturnCorrectBookById(Book expectedBook) {
-        var actualBook = repositoryJpa.findById(expectedBook.getId());
+        var actualBook = repository.findById(expectedBook.getId());
 
         assertThat(actualBook).isPresent()
                 .get()
@@ -57,7 +55,7 @@ class JpaBookRepositoryTest {
     @DisplayName("должен загружать список всех книг")
     @Test
     void shouldReturnCorrectBooksList() {
-        var actualBooks = repositoryJpa.findAll();
+        var actualBooks = repository.findAll();
         var expectedBooks = dbBooks;
 
         assertThat(actualBooks)
@@ -70,7 +68,7 @@ class JpaBookRepositoryTest {
     void shouldSaveNewBook() {
         var expectedBook = new Book(0, "BookTitle_10500", dbAuthors.get(0),
                 List.of(dbGenres.get(0), dbGenres.get(2)));
-        var returnedBook = repositoryJpa.save(expectedBook);
+        var returnedBook = repository.save(expectedBook);
 
         assertThat(returnedBook).isNotNull()
                 .matches(book -> book.getId() > 0)
@@ -94,7 +92,7 @@ class JpaBookRepositoryTest {
                 .usingRecursiveComparison()
                 .isNotEqualTo(expectedBook);
 
-        var returnedBook = repositoryJpa.save(expectedBook);
+        var returnedBook = repository.save(expectedBook);
 
         assertThat(returnedBook).isNotNull()
                 .matches(book -> book.getId() > 0)
@@ -112,7 +110,7 @@ class JpaBookRepositoryTest {
     void shouldDeleteBook() {
         assertThat(tem.find(Book.class, 1L)).isNotNull();
 
-        repositoryJpa.deleteById(1L);
+        repository.deleteById(1L);
 
         assertThat(tem.find(Book.class, 1L)).isNull();
     }

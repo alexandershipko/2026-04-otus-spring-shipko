@@ -9,18 +9,13 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import ru.otus.hw.models.Book;
 import ru.otus.hw.models.BookComment;
-import ru.otus.hw.repositories.JpaBookCommentRepository;
-import ru.otus.hw.repositories.JpaBookRepository;
-
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DisplayName("Интеграционный тест сервиса комментариев")
 @DataJpaTest
-@Import({BookCommentServiceImpl.class,
-        JpaBookCommentRepository.class,
-        JpaBookRepository.class})
+@Import(BookCommentServiceImpl.class)
 @Transactional(propagation = Propagation.NEVER)
 class BookCommentServiceImplTest {
 

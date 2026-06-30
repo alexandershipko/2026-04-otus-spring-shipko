@@ -5,14 +5,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
-import org.springframework.context.annotation.Import;
 import ru.otus.hw.models.Book;
 import ru.otus.hw.models.BookComment;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DisplayName("Репозиторий на основе Jpa для работы с комментариями")
-@Import(JpaBookCommentRepository.class)
 @DataJpaTest
 class JpaBookCommentRepositoryTest {
 
@@ -20,12 +18,12 @@ class JpaBookCommentRepositoryTest {
     private TestEntityManager tem;
 
     @Autowired
-    private JpaBookCommentRepository repositoryJpa;
+    private BookCommentRepository repository;
 
     @DisplayName("должен загружать комментарий по id")
     @Test
     void shouldReturnCorrectCommentById() {
-        var actualComment = repositoryJpa.findById(1L);
+        var actualComment = repository.findById(1L);
         var expectedComment = tem.find(BookComment.class, 1L);
 
         assertThat(actualComment).isPresent()
@@ -37,7 +35,7 @@ class JpaBookCommentRepositoryTest {
     @DisplayName("должен загружать все комментарии по id книги")
     @Test
     void shouldReturnCorrectCommentsByBookId() {
-        var actualComments = repositoryJpa.findAllByBookId(1L);
+        var actualComments = repository.findAllByBookId(1L);
 
         assertThat(actualComments).hasSize(2)
                 .allMatch(c -> c.getText() != null && !c.getText().isEmpty());
@@ -49,7 +47,7 @@ class JpaBookCommentRepositoryTest {
         var book = tem.find(Book.class, 1L);
         var expectedComment = new BookComment(0, "New comment", book);
 
-        var returnedComment = repositoryJpa.save(expectedComment);
+        var returnedComment = repository.save(expectedComment);
 
         assertThat(returnedComment).isNotNull()
                 .matches(c -> c.getId() > 0)
@@ -68,7 +66,7 @@ class JpaBookCommentRepositoryTest {
         var book = tem.find(Book.class, 2L);
         var expectedComment = new BookComment(1L, "Updated comment", book);
 
-        repositoryJpa.save(expectedComment);
+        repository.save(expectedComment);
 
         var foundComment = tem.find(BookComment.class, 1L);
 
@@ -82,7 +80,7 @@ class JpaBookCommentRepositoryTest {
     void shouldDeleteComment() {
         assertThat(tem.find(BookComment.class, 1L)).isNotNull();
 
-        repositoryJpa.deleteById(1L);
+        repository.deleteById(1L);
 
         assertThat(tem.find(BookComment.class, 1L)).isNull();
     }
