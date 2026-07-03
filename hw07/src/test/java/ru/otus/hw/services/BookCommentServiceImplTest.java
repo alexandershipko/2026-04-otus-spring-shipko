@@ -22,9 +22,9 @@ class BookCommentServiceImplTest {
     @Autowired
     private BookCommentService bookCommentService;
 
-    @DisplayName("должен загружать комментарий по id без LazyInitializationException")
+    @DisplayName("должен загружать комментарий по id")
     @Test
-    void shouldFindByIdWithoutLazyInitializationException() {
+    void shouldFindById() {
         var book = new Book(1, "BookTitle_1", null, null);
         var expectedComment = new BookComment(1, "Comment_1", book);
 
@@ -32,13 +32,13 @@ class BookCommentServiceImplTest {
 
         assertThat(comment).isPresent().get()
                 .usingRecursiveComparison()
-                .ignoringFields("book.author", "book.genres")
+                .ignoringFields("book")
                 .isEqualTo(expectedComment);
     }
 
-    @DisplayName("должен загружать все комментарии по id книги без LazyInitializationException")
+    @DisplayName("должен загружать все комментарии по id книги")
     @Test
-    void shouldFindAllByBookIdWithoutLazyInitializationException() {
+    void shouldFindAllByBookId() {
         var book = new Book(1, "BookTitle_1", null, null);
         var expectedComments = List.of(
                 new BookComment(1, "Comment_1", book),
@@ -49,7 +49,7 @@ class BookCommentServiceImplTest {
 
         assertThat(comments)
                 .usingRecursiveComparison()
-                .ignoringFields("book.author", "book.genres")
+                .ignoringFields("book")
                 .isEqualTo(expectedComments);
     }
 
