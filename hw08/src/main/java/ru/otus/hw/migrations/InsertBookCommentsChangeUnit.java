@@ -1,0 +1,45 @@
+package ru.otus.hw.migrations;
+
+import io.mongock.api.annotations.ChangeUnit;
+import io.mongock.api.annotations.Execution;
+import io.mongock.api.annotations.RollbackExecution;
+import ru.otus.hw.models.Book;
+import ru.otus.hw.models.BookComment;
+import ru.otus.hw.repositories.BookCommentRepository;
+import ru.otus.hw.repositories.BookRepository;
+
+import java.util.List;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+@ChangeUnit(id = "insert-book-comments", order = "004", author = "shipko")
+public class InsertBookCommentsChangeUnit {
+
+    private static final Set<String> TEXTS = Set.of("Comment_1", "Comment_2", "Comment_3");
+
+    @Execution
+    public void execution(BookRepository bookRepository, BookCommentRepository bookCommentRepository) {
+        var booksByTitle = bookRepository.findAll().stream()
+                .collect(Collectors.toMap(Book::getTitle, Function.identity()));
+
+        var book1Id = booksByTitle.get("BookTitle_1").getId();
+        var book2Id = booksByTitle.get("BookTitle_2").getId();
+
+        bookCommentRepository.saveAll(List.of(
+                new BookComment(null, "Comment_1", book1Id),
+                new BookComment(null, "Comment_2", book1Id),
+                new BookComment(null, "Comment_3", book2Id)
+        ));
+    }
+
+    @RollbackExecution
+    public void rollbackExecution(BookCommentRepository bookCommentRepository) {
+        var commentsToDelete = bookCommentRepository.findAll().stream()
+                .filter(comment -> TEXTS.contains(comment.getText()))
+                .toList();
+
+        bookCommentRepository.deleteAll(commentsToDelete);
+    }
+
+}
