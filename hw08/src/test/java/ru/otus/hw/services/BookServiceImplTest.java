@@ -7,10 +7,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
 import org.springframework.context.annotation.Import;
 import ru.otus.hw.exceptions.DocumentNotFoundException;
+import ru.otus.hw.listeners.BookMongoEventListener;
 import ru.otus.hw.models.Author;
 import ru.otus.hw.models.Book;
+import ru.otus.hw.models.BookComment;
 import ru.otus.hw.models.Genre;
 import ru.otus.hw.repositories.AuthorRepository;
+import ru.otus.hw.repositories.BookCommentRepository;
 import ru.otus.hw.repositories.BookRepository;
 import ru.otus.hw.repositories.GenreRepository;
 
@@ -23,7 +26,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @DisplayName("Интеграционный тест сервиса книг")
 @DataMongoTest
-@Import(BookServiceImpl.class)
+@Import({BookServiceImpl.class, BookMongoEventListener.class})
 class BookServiceImplTest {
 
     @Autowired
@@ -36,6 +39,9 @@ class BookServiceImplTest {
     private BookRepository bookRepository;
 
     @Autowired
+    private BookCommentRepository bookCommentRepository;
+
+    @Autowired
     private BookService bookService;
 
     private List<Author> dbAuthors;
@@ -46,6 +52,7 @@ class BookServiceImplTest {
 
     @BeforeEach
     void setUp() {
+        bookCommentRepository.deleteAll();
         bookRepository.deleteAll();
         authorRepository.deleteAll();
         genreRepository.deleteAll();
@@ -64,6 +71,10 @@ class BookServiceImplTest {
         dbBooks = bookRepository.saveAll(List.of(
                 new Book(null, "BookTitle_1", dbAuthors.get(0), List.of(dbGenres.get(0), dbGenres.get(1))),
                 new Book(null, "BookTitle_2", dbAuthors.get(1), List.of(dbGenres.get(2), dbGenres.get(3)))));
+
+        bookCommentRepository.saveAll(List.of(
+                new BookComment(null, "Comment_1", dbBooks.get(0).getId()),
+                new BookComment(null, "Comment_2", dbBooks.get(0).getId())));
     }
 
     @DisplayName("должен загружать книгу по id со всеми вложенными данными")
@@ -137,6 +148,18 @@ class BookServiceImplTest {
         bookService.deleteById(bookId);
 
         assertThat(bookService.findById(bookId)).isEmpty();
+    }
+
+    @DisplayName("должен удалять комментарии книги вместе с ней, не оставляя несогласованных данных")
+    @Test
+    void shouldDeleteBookCommentsOnBookDeletion() {
+        var bookId = dbBooks.get(0).getId();
+
+        assertThat(bookCommentRepository.findAllByBookId(bookId)).isNotEmpty();
+
+        bookService.deleteById(bookId);
+
+        assertThat(bookCommentRepository.findAllByBookId(bookId)).isEmpty();
     }
 
 }
