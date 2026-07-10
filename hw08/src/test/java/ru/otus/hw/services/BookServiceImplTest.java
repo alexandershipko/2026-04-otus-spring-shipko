@@ -73,8 +73,8 @@ class BookServiceImplTest {
                 new Book(null, "BookTitle_2", dbAuthors.get(1), List.of(dbGenres.get(2), dbGenres.get(3)))));
 
         bookCommentRepository.saveAll(List.of(
-                new BookComment(null, "Comment_1", dbBooks.get(0).getId()),
-                new BookComment(null, "Comment_2", dbBooks.get(0).getId())));
+                new BookComment(null, "Comment_1", dbBooks.get(0)),
+                new BookComment(null, "Comment_2", dbBooks.get(0))));
     }
 
     @DisplayName("должен загружать книгу по id со всеми вложенными данными")

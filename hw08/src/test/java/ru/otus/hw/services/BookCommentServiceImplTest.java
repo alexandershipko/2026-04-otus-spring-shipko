@@ -57,8 +57,8 @@ class BookCommentServiceImplTest {
         dbBook = bookRepository.save(new Book(null, "BookTitle_1", author, List.of(genre)));
 
         dbComments = bookCommentRepository.saveAll(List.of(
-                new BookComment(null, "Comment_1", dbBook.getId()),
-                new BookComment(null, "Comment_2", dbBook.getId())));
+                new BookComment(null, "Comment_1", dbBook),
+                new BookComment(null, "Comment_2", dbBook)));
     }
 
     @DisplayName("должен загружать комментарий по id")
@@ -70,7 +70,10 @@ class BookCommentServiceImplTest {
 
         assertThat(comment).isPresent().get()
                 .usingRecursiveComparison()
+                .ignoringFields("book")
                 .isEqualTo(expectedComment);
+
+        assertThat(comment.get().getBook().getId()).isEqualTo(expectedComment.getBook().getId());
     }
 
     @DisplayName("должен загружать все комментарии по id книги")
@@ -81,7 +84,12 @@ class BookCommentServiceImplTest {
         assertThat(comments)
                 .usingRecursiveComparison()
                 .ignoringCollectionOrder()
+                .ignoringFields("book")
                 .isEqualTo(dbComments);
+
+        assertThat(comments)
+                .extracting(comment -> comment.getBook().getId())
+                .containsOnly(dbBook.getId());
     }
 
     @DisplayName("должен сохранять новый комментарий")
@@ -91,7 +99,7 @@ class BookCommentServiceImplTest {
 
         assertThat(savedComment.getId()).isNotNull();
         assertThat(savedComment.getText()).isEqualTo("New comment");
-        assertThat(savedComment.getBookId()).isEqualTo(dbBook.getId());
+        assertThat(savedComment.getBook().getId()).isEqualTo(dbBook.getId());
     }
 
     @DisplayName("должен выбрасывать исключение при вставке комментария к несуществующей книге")

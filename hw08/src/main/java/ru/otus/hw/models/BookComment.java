@@ -5,8 +5,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.Field;
 
 @Data
 @NoArgsConstructor
@@ -20,7 +20,7 @@ public class BookComment {
 
     private String text;
 
-    @Field(name = "book_id")
-    private String bookId;
+    @DBRef(lazy = true)
+    private Book book;
 
 }

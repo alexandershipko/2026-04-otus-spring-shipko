@@ -30,10 +30,9 @@ public class BookCommentServiceImpl implements BookCommentService {
 
     @Override
     public BookComment insert(String text, String bookId) {
-        if (!bookRepository.existsById(bookId)) {
-            throw new DocumentNotFoundException("Book with id %s not found".formatted(bookId));
-        }
-        var comment = new BookComment(null, text, bookId);
+        var book = bookRepository.findById(bookId)
+                .orElseThrow(() -> new DocumentNotFoundException("Book with id %s not found".formatted(bookId)));
+        var comment = new BookComment(null, text, book);
 
         return bookCommentRepository.save(comment);
     }

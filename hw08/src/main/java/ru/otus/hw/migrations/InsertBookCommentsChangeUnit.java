@@ -23,13 +23,13 @@ public class InsertBookCommentsChangeUnit {
         var booksByTitle = bookRepository.findAll().stream()
                 .collect(Collectors.toMap(Book::getTitle, Function.identity()));
 
-        var book1Id = booksByTitle.get("BookTitle_1").getId();
-        var book2Id = booksByTitle.get("BookTitle_2").getId();
+        var book1 = booksByTitle.get("BookTitle_1");
+        var book2 = booksByTitle.get("BookTitle_2");
 
         bookCommentRepository.saveAll(List.of(
-                new BookComment(null, "Comment_1", book1Id),
-                new BookComment(null, "Comment_2", book1Id),
-                new BookComment(null, "Comment_3", book2Id)
+                new BookComment(null, "Comment_1", book1),
+                new BookComment(null, "Comment_2", book1),
+                new BookComment(null, "Comment_3", book2)
         ));
     }
 
