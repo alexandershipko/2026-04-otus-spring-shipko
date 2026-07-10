@@ -1,0 +1,17 @@
+spring:
+  shell:
+    interactive:
+      enabled: false
+
+  output:
+    ansi:
+      enabled: always
+
+mongock:
+  enabled: false
+
+de:
+  flapdoodle:
+    mongodb:
+      embedded:
+        version: 7.0.14
