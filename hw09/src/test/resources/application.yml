@@ -1,7 +1,6 @@
 spring:
-  shell:
-    interactive:
-      enabled: false
+  messages:
+    fallback-to-system-locale: false
 
   output:
     ansi:

@@ -1,4 +1,7 @@
 spring:
+  messages:
+    fallback-to-system-locale: false
+
   jpa:
     open-in-view: false
     generate-ddl: false

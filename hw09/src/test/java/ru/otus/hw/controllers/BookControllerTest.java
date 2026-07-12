@@ -31,6 +31,8 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.hamcrest.Matchers.containsString;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -212,6 +214,26 @@ class BookControllerTest {
                 .andExpect(status().isMethodNotAllowed());
 
         verify(bookCommentService, never()).deleteById(anyLong());
+    }
+
+    @DisplayName("должен показывать текст на русском по умолчанию")
+    @Test
+    void shouldRenderRussianTextByDefault() throws Exception {
+        given(bookService.findAll()).willReturn(List.of());
+
+        mockMvc.perform(get("/books"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Список книг")));
+    }
+
+    @DisplayName("должен показывать текст на английском при переключении локали")
+    @Test
+    void shouldRenderEnglishTextWhenLocaleSwitched() throws Exception {
+        given(bookService.findAll()).willReturn(List.of());
+
+        mockMvc.perform(get("/books").param("lang", "en_US"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Book list")));
     }
 
 }
