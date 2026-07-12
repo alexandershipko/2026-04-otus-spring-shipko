@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${book.title}"></title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+
+<body>
+<div th:replace="~{fragments/nav :: nav}"></div>
+<h1 th:text="${book.title}"></h1>
+<p><span th:text="#{books.view.author}">Author:</span> <span th:text="${book.author.fullName}"></span></p>
+<p>
+    <span th:text="#{books.view.genres}">Genres:</span>
+    <span th:each="genre, iter : ${book.genres}">
+        <span th:text="${genre.name}"></span><span th:if="${!iter.last}">, </span>
+    </span>
+</p>
+<a class="btn" th:href="@{/books/{id}/edit(id=${book.id})}" th:text="#{books.view.edit}">Edit</a>
+<form th:action="@{/books/{id}/delete(id=${book.id})}" method="post" style="display:inline">
+    <button type="submit" class="btn"
+            th:text="#{books.view.delete}"
+            th:onclick="|return confirm('#{books.view.deleteConfirm}')|">Delete</button>
+</form>
+
+<h2 th:text="#{books.view.comments}">Comments</h2>
+<p th:if="${#lists.isEmpty(comments)}" th:text="#{books.view.noComments}">No comments yet</p>
+<ul>
+    <li th:each="comment : ${comments}">
+        <span th:text="${comment.text}"></span>
+        <form th:action="@{/books/{id}/comments/{commentId}/delete(id=${book.id},commentId=${comment.id})}"
+              method="post" style="display:inline">
+            <button type="submit" class="btn"
+                    th:text="#{books.view.deleteComment}"
+                    th:onclick="|return confirm('#{books.view.deleteCommentConfirm}')|">Delete</button>
+        </form>
+    </li>
+</ul>
+
+<form th:action="@{/books/{id}/comments(id=${book.id})}" method="post">
+    <label>
+        <span th:text="#{books.view.commentLabel}">Comment text:</span>
+        <input type="text" name="text" required/>
+    </label>
+    <button type="submit" class="btn" th:text="#{books.view.addComment}">Add comment</button>
+</form>
+
+<a href="/books" th:text="#{books.view.back}">Back to book list</a>
+</body>
+
+</html>

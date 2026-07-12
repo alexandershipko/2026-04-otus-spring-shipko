@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${bookForm.id == 0} ? #{books.form.title.new} : #{books.form.title.edit}"></title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+
+<body>
+<div th:replace="~{fragments/nav :: nav}"></div>
+<h1 th:text="${bookForm.id == 0} ? #{books.form.title.new} : #{books.form.title.edit}"></h1>
+<form th:action="${bookForm.id == 0} ? @{/books} : @{/books/{id}/edit(id=${bookForm.id})}"
+      th:object="${bookForm}" method="post">
+    <input type="hidden" th:field="*{id}"/>
+    <div>
+        <label th:text="#{books.form.label.title}">Title:</label>
+        <input type="text" th:field="*{title}" required/>
+    </div>
+    <div>
+        <label th:text="#{books.form.label.author}">Author:</label>
+        <select th:field="*{authorId}" required>
+            <option value="" disabled th:text="#{books.form.select.author}">-- select author --</option>
+            <option th:each="author : ${authors}" th:value="${author.id}" th:text="${author.fullName}"></option>
+        </select>
+    </div>
+    <div>
+        <p th:text="#{books.form.label.genres}">Genres:</p>
+        <div th:each="genre : ${genres}">
+            <label>
+                <input type="checkbox" th:field="*{genreIds}" th:value="${genre.id}"/>
+                <span th:text="${genre.name}"></span>
+            </label>
+        </div>
+    </div>
+    <button type="submit" class="btn" th:text="#{books.form.save}">Save</button>
+    <a class="btn" href="/books" th:text="#{books.form.cancel}">Cancel</a>
+</form>
+</body>
+
+</html>
