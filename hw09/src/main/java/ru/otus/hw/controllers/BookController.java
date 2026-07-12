@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import ru.otus.hw.dto.AuthorDto;
 import ru.otus.hw.dto.BookCommentDto;
@@ -27,7 +26,6 @@ import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Controller
-@RequestMapping("/books")
 public class BookController {
 
     private final BookService bookService;
@@ -38,7 +36,7 @@ public class BookController {
 
     private final BookCommentService bookCommentService;
 
-    @GetMapping
+    @GetMapping("/books")
     public String findAll(Model model) {
         var books = bookService.findAll().stream()
                 .map(BookController::toBookDto)
@@ -48,7 +46,7 @@ public class BookController {
         return "books/list";
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/books/{id}")
     public String findById(@PathVariable long id, Model model) {
         var book = bookService.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Book with id %d not found".formatted(id)));
@@ -61,7 +59,7 @@ public class BookController {
         return "books/view";
     }
 
-    @GetMapping("/new")
+    @GetMapping("/books/new")
     public String newBookForm(Model model) {
         model.addAttribute("bookForm", new BookFormDto());
         addFormReferenceData(model);
@@ -69,14 +67,14 @@ public class BookController {
         return "books/form";
     }
 
-    @PostMapping
+    @PostMapping("/books")
     public String create(@ModelAttribute("bookForm") BookFormDto bookForm) {
         bookService.insert(bookForm.getTitle(), bookForm.getAuthorId(), bookForm.getGenreIds());
 
         return "redirect:/books";
     }
 
-    @GetMapping("/{id}/edit")
+    @GetMapping("/books/{id}/edit")
     public String editBookForm(@PathVariable long id, Model model) {
         var book = bookService.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Book with id %d not found".formatted(id)));
@@ -89,28 +87,28 @@ public class BookController {
         return "books/form";
     }
 
-    @PostMapping("/{id}/edit")
+    @PostMapping("/books/{id}/edit")
     public String update(@PathVariable long id, @ModelAttribute("bookForm") BookFormDto bookForm) {
         bookService.update(id, bookForm.getTitle(), bookForm.getAuthorId(), bookForm.getGenreIds());
 
         return "redirect:/books";
     }
 
-    @PostMapping("/{id}/delete")
+    @PostMapping("/books/{id}/delete")
     public String delete(@PathVariable long id) {
         bookService.deleteById(id);
 
         return "redirect:/books";
     }
 
-    @PostMapping("/{id}/comments")
+    @PostMapping("/books/{id}/comments")
     public String addComment(@PathVariable long id, @RequestParam String text) {
         bookCommentService.insert(text, id);
 
         return "redirect:/books/%d".formatted(id);
     }
 
-    @PostMapping("/{id}/comments/{commentId}/delete")
+    @PostMapping("/books/{id}/comments/{commentId}/delete")
     public String deleteComment(@PathVariable long id, @PathVariable long commentId) {
         bookCommentService.deleteById(commentId);
 
