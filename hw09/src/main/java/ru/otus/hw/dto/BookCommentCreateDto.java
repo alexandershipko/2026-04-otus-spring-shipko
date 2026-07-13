@@ -4,19 +4,13 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Set;
-
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class BookFormDto {
+public class BookCommentCreateDto {
 
-    private long id;
+    private String text;
 
-    private String title;
-
-    private Long authorId;
-
-    private Set<Long> genreIds;
+    private long bookId;
 
 }

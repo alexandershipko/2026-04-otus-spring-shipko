@@ -7,20 +7,19 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.otus.hw.dto.AuthorDto;
+import ru.otus.hw.dto.BookCommentCreateDto;
 import ru.otus.hw.dto.BookCommentDto;
+import ru.otus.hw.dto.BookCreateDto;
 import ru.otus.hw.dto.BookDto;
+import ru.otus.hw.dto.BookUpdateDto;
 import ru.otus.hw.dto.GenreDto;
-import ru.otus.hw.models.Author;
-import ru.otus.hw.models.Book;
-import ru.otus.hw.models.BookComment;
-import ru.otus.hw.models.Genre;
+import ru.otus.hw.exceptions.EntityNotFoundException;
 import ru.otus.hw.services.AuthorService;
 import ru.otus.hw.services.BookCommentService;
 import ru.otus.hw.services.BookService;
 import ru.otus.hw.services.GenreService;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -57,11 +56,9 @@ class BookControllerTest {
     @MockitoBean
     private BookCommentService bookCommentService;
 
-    private final Author author = new Author(1, "Author_1");
+    private final AuthorDto authorDto = new AuthorDto(1, "Author_1");
 
-    private final Genre genre = new Genre(1, "Genre_1");
-
-    private final Book book = new Book(1, "BookTitle_1", author, List.of(genre));
+    private final GenreDto genreDto = new GenreDto(1, "Genre_1");
 
     private final BookDto bookDto =
             new BookDto(1, "BookTitle_1", new AuthorDto(1, "Author_1"), List.of(new GenreDto(1, "Genre_1")));
@@ -69,7 +66,7 @@ class BookControllerTest {
     @DisplayName("должен отображать список книг")
     @Test
     void shouldReturnBooksList() throws Exception {
-        given(bookService.findAll()).willReturn(List.of(book));
+        given(bookService.findAll()).willReturn(List.of(bookDto));
 
         mockMvc.perform(get("/books"))
                 .andExpect(status().isOk())
@@ -80,9 +77,8 @@ class BookControllerTest {
     @DisplayName("должен отображать книгу с комментариями")
     @Test
     void shouldReturnBookView() throws Exception {
-        var comment = new BookComment(1, "Comment_1", book);
-        given(bookService.findById(1L)).willReturn(Optional.of(book));
-        given(bookCommentService.findAllByBookId(1L)).willReturn(List.of(comment));
+        given(bookService.findById(1L)).willReturn(bookDto);
+        given(bookCommentService.findAllByBookId(1L)).willReturn(List.of(new BookCommentDto(1, "Comment_1")));
 
         mockMvc.perform(get("/books/1"))
                 .andExpect(status().isOk())
@@ -94,7 +90,7 @@ class BookControllerTest {
     @DisplayName("должен возвращать 404 при отсутствии книги")
     @Test
     void shouldReturnNotFoundForMissingBook() throws Exception {
-        given(bookService.findById(99L)).willReturn(Optional.empty());
+        given(bookService.findById(99L)).willThrow(new EntityNotFoundException("Book with id 99 not found"));
 
         mockMvc.perform(get("/books/99"))
                 .andExpect(status().isNotFound())
@@ -104,8 +100,8 @@ class BookControllerTest {
     @DisplayName("должен отображать форму создания книги")
     @Test
     void shouldReturnNewBookForm() throws Exception {
-        given(authorService.findAll()).willReturn(List.of(author));
-        given(genreService.findAll()).willReturn(List.of(genre));
+        given(authorService.findAll()).willReturn(List.of(authorDto));
+        given(genreService.findAll()).willReturn(List.of(genreDto));
 
         mockMvc.perform(get("/books/new"))
                 .andExpect(status().isOk())
@@ -117,7 +113,7 @@ class BookControllerTest {
     @DisplayName("должен создавать книгу и делать редирект на список")
     @Test
     void shouldCreateBook() throws Exception {
-        given(bookService.insert(any(), anyLong(), any())).willReturn(book);
+        given(bookService.insert(any())).willReturn(bookDto);
 
         mockMvc.perform(post("/books")
                         .param("title", "NewBook")
@@ -126,15 +122,15 @@ class BookControllerTest {
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/books"));
 
-        verify(bookService).insert(eq("NewBook"), eq(1L), eq(Set.of(1L)));
+        verify(bookService).insert(eq(new BookCreateDto("NewBook", 1L, Set.of(1L))));
     }
 
     @DisplayName("должен отображать форму редактирования книги")
     @Test
     void shouldReturnEditBookForm() throws Exception {
-        given(bookService.findById(1L)).willReturn(Optional.of(book));
-        given(authorService.findAll()).willReturn(List.of(author));
-        given(genreService.findAll()).willReturn(List.of(genre));
+        given(bookService.findById(1L)).willReturn(bookDto);
+        given(authorService.findAll()).willReturn(List.of(authorDto));
+        given(genreService.findAll()).willReturn(List.of(genreDto));
 
         mockMvc.perform(get("/books/1/edit"))
                 .andExpect(status().isOk())
@@ -145,7 +141,7 @@ class BookControllerTest {
     @DisplayName("должен возвращать 404 при редактировании отсутствующей книги")
     @Test
     void shouldReturnNotFoundForMissingBookEdit() throws Exception {
-        given(bookService.findById(99L)).willReturn(Optional.empty());
+        given(bookService.findById(99L)).willThrow(new EntityNotFoundException("Book with id 99 not found"));
 
         mockMvc.perform(get("/books/99/edit"))
                 .andExpect(status().isNotFound())
@@ -155,7 +151,7 @@ class BookControllerTest {
     @DisplayName("должен обновлять книгу и делать редирект на список")
     @Test
     void shouldUpdateBook() throws Exception {
-        given(bookService.update(anyLong(), any(), anyLong(), any())).willReturn(book);
+        given(bookService.update(any())).willReturn(bookDto);
 
         mockMvc.perform(post("/books/1/edit")
                         .param("title", "UpdatedBook")
@@ -164,7 +160,7 @@ class BookControllerTest {
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/books"));
 
-        verify(bookService).update(eq(1L), eq("UpdatedBook"), eq(1L), eq(Set.of(1L)));
+        verify(bookService).update(eq(new BookUpdateDto(1L, "UpdatedBook", 1L, Set.of(1L))));
     }
 
     @DisplayName("должен удалять книгу и делать редирект на список")
@@ -194,7 +190,7 @@ class BookControllerTest {
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/books/1"));
 
-        verify(bookCommentService).insert("NewComment", 1L);
+        verify(bookCommentService).insert(new BookCommentCreateDto("NewComment", 1L));
     }
 
     @DisplayName("должен удалять комментарий и делать редирект на страницу книги")

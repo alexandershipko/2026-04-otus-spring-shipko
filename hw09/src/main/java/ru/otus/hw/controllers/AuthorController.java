@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import ru.otus.hw.dto.AuthorDto;
 import ru.otus.hw.services.AuthorService;
 
 @RequiredArgsConstructor
@@ -15,10 +14,7 @@ public class AuthorController {
 
     @GetMapping("/authors")
     public String findAll(Model model) {
-        var authors = authorService.findAll().stream()
-                .map(author -> new AuthorDto(author.getId(), author.getFullName()))
-                .toList();
-        model.addAttribute("authors", authors);
+        model.addAttribute("authors", authorService.findAll());
 
         return "authors/list";
     }

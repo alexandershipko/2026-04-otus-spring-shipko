@@ -3,19 +3,18 @@
 
 <head>
     <meta charset="UTF-8">
-    <title th:text="${bookForm.id == 0} ? #{books.form.title.new} : #{books.form.title.edit}"></title>
+    <title th:text="${formAction == '/books'} ? #{books.form.title.new} : #{books.form.title.edit}"></title>
     <link rel="stylesheet" th:href="@{/css/style.css}"/>
 </head>
 
 <body>
 <div th:replace="~{fragments/nav :: nav}"></div>
-<h1 th:text="${bookForm.id == 0} ? #{books.form.title.new} : #{books.form.title.edit}"></h1>
-<form th:action="${bookForm.id == 0} ? @{/books} : @{/books/{id}/edit(id=${bookForm.id})}"
-      th:object="${bookForm}" method="post">
-    <input type="hidden" th:field="*{id}"/>
+<h1 th:text="${formAction == '/books'} ? #{books.form.title.new} : #{books.form.title.edit}"></h1>
+<form th:action="@{${formAction}}" th:object="${bookForm}" method="post">
     <div>
         <label th:text="#{books.form.label.title}">Title:</label>
         <input type="text" th:field="*{title}" required/>
+        <span class="error" th:if="${#fields.hasErrors('title')}" th:errors="*{title}"></span>
     </div>
     <div>
         <label th:text="#{books.form.label.author}">Author:</label>
@@ -23,6 +22,7 @@
             <option value="" disabled th:text="#{books.form.select.author}">-- select author --</option>
             <option th:each="author : ${authors}" th:value="${author.id}" th:text="${author.fullName}"></option>
         </select>
+        <span class="error" th:if="${#fields.hasErrors('authorId')}" th:errors="*{authorId}"></span>
     </div>
     <div>
         <p th:text="#{books.form.label.genres}">Genres:</p>
@@ -32,6 +32,7 @@
                 <span th:text="${genre.name}"></span>
             </label>
         </div>
+        <span class="error" th:if="${#fields.hasErrors('genreIds')}" th:errors="*{genreIds}"></span>
     </div>
     <button type="submit" class="btn" th:text="#{books.form.save}">Save</button>
     <a class="btn" href="/books" th:text="#{books.form.cancel}">Cancel</a>

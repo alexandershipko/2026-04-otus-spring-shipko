@@ -1,22 +1,19 @@
 package ru.otus.hw.controllers;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import ru.otus.hw.dto.AuthorDto;
-import ru.otus.hw.dto.BookCommentDto;
-import ru.otus.hw.dto.BookDto;
-import ru.otus.hw.dto.BookFormDto;
+import ru.otus.hw.dto.BookCommentCreateDto;
+import ru.otus.hw.dto.BookCreateDto;
+import ru.otus.hw.dto.BookUpdateDto;
 import ru.otus.hw.dto.GenreDto;
-import ru.otus.hw.exceptions.EntityNotFoundException;
-import ru.otus.hw.models.Author;
-import ru.otus.hw.models.Book;
-import ru.otus.hw.models.Genre;
 import ru.otus.hw.services.AuthorService;
 import ru.otus.hw.services.BookCommentService;
 import ru.otus.hw.services.BookService;
@@ -38,58 +35,69 @@ public class BookController {
 
     @GetMapping("/books")
     public String findAll(Model model) {
-        var books = bookService.findAll().stream()
-                .map(BookController::toBookDto)
-                .toList();
-        model.addAttribute("books", books);
+        model.addAttribute("books", bookService.findAll());
 
         return "books/list";
     }
 
     @GetMapping("/books/{id}")
     public String findById(@PathVariable long id, Model model) {
-        var book = bookService.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Book with id %d not found".formatted(id)));
-        var comments = bookCommentService.findAllByBookId(id).stream()
-                .map(comment -> new BookCommentDto(comment.getId(), comment.getText()))
-                .toList();
-        model.addAttribute("book", toBookDto(book));
-        model.addAttribute("comments", comments);
+        model.addAttribute("book", bookService.findById(id));
+        model.addAttribute("comments", bookCommentService.findAllByBookId(id));
 
         return "books/view";
     }
 
     @GetMapping("/books/new")
     public String newBookForm(Model model) {
-        model.addAttribute("bookForm", new BookFormDto());
+        model.addAttribute("bookForm", new BookCreateDto());
+        model.addAttribute("formAction", "/books");
         addFormReferenceData(model);
 
         return "books/form";
     }
 
     @PostMapping("/books")
-    public String create(@ModelAttribute("bookForm") BookFormDto bookForm) {
-        bookService.insert(bookForm.getTitle(), bookForm.getAuthorId(), bookForm.getGenreIds());
+    public String create(@Valid @ModelAttribute("bookForm") BookCreateDto bookForm, BindingResult bindingResult,
+                          Model model) {
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("formAction", "/books");
+            addFormReferenceData(model);
+
+            return "books/form";
+        }
+
+        bookService.insert(bookForm);
 
         return "redirect:/books";
     }
 
     @GetMapping("/books/{id}/edit")
     public String editBookForm(@PathVariable long id, Model model) {
-        var book = bookService.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Book with id %d not found".formatted(id)));
+        var book = bookService.findById(id);
         var genreIds = book.getGenres().stream()
-                .map(Genre::getId).collect(Collectors.toSet());
-        var bookForm = new BookFormDto(book.getId(), book.getTitle(), book.getAuthor().getId(), genreIds);
+                .map(GenreDto::getId).collect(Collectors.toSet());
+        var bookForm = new BookUpdateDto(book.getId(), book.getTitle(), book.getAuthor().getId(), genreIds);
+
         model.addAttribute("bookForm", bookForm);
+        model.addAttribute("formAction", "/books/%d/edit".formatted(id));
+
         addFormReferenceData(model);
 
         return "books/form";
     }
 
     @PostMapping("/books/{id}/edit")
-    public String update(@PathVariable long id, @ModelAttribute("bookForm") BookFormDto bookForm) {
-        bookService.update(id, bookForm.getTitle(), bookForm.getAuthorId(), bookForm.getGenreIds());
+    public String update(@PathVariable long id, @Valid @ModelAttribute("bookForm") BookUpdateDto bookForm,
+                          BindingResult bindingResult, Model model) {
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("formAction", "/books/%d/edit".formatted(id));
+            addFormReferenceData(model);
+
+            return "books/form";
+        }
+
+        bookService.update(bookForm);
 
         return "redirect:/books";
     }
@@ -103,7 +111,7 @@ public class BookController {
 
     @PostMapping("/books/{id}/comments")
     public String addComment(@PathVariable long id, @RequestParam String text) {
-        bookCommentService.insert(text, id);
+        bookCommentService.insert(new BookCommentCreateDto(text, id));
 
         return "redirect:/books/%d".formatted(id);
     }
@@ -116,30 +124,8 @@ public class BookController {
     }
 
     private void addFormReferenceData(Model model) {
-        var authors = authorService.findAll().stream()
-                .map(BookController::toAuthorDto)
-                .toList();
-        var genres = genreService.findAll().stream()
-                .map(BookController::toGenreDto)
-                .toList();
-        model.addAttribute("authors", authors);
-        model.addAttribute("genres", genres);
-    }
-
-    private static BookDto toBookDto(Book book) {
-        var genres = book.getGenres().stream()
-                .map(BookController::toGenreDto)
-                .toList();
-
-        return new BookDto(book.getId(), book.getTitle(), toAuthorDto(book.getAuthor()), genres);
-    }
-
-    private static AuthorDto toAuthorDto(Author author) {
-        return new AuthorDto(author.getId(), author.getFullName());
-    }
-
-    private static GenreDto toGenreDto(Genre genre) {
-        return new GenreDto(genre.getId(), genre.getName());
+        model.addAttribute("authors", authorService.findAll());
+        model.addAttribute("genres", genreService.findAll());
     }
 
 }

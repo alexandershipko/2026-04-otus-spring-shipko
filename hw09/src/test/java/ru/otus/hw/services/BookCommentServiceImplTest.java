@@ -7,8 +7,8 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import ru.otus.hw.models.Book;
-import ru.otus.hw.models.BookComment;
+import ru.otus.hw.dto.BookCommentDto;
+
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -25,31 +25,27 @@ class BookCommentServiceImplTest {
     @DisplayName("должен загружать комментарий по id")
     @Test
     void shouldFindById() {
-        var book = new Book(1, "BookTitle_1", null, null);
-        var expectedComment = new BookComment(1, "Comment_1", book);
+        var expectedComment = new BookCommentDto(1, "Comment_1");
 
         var comment = bookCommentService.findById(1L);
 
-        assertThat(comment).isPresent().get()
+        assertThat(comment)
                 .usingRecursiveComparison()
-                .ignoringFields("book")
                 .isEqualTo(expectedComment);
     }
 
     @DisplayName("должен загружать все комментарии по id книги")
     @Test
     void shouldFindAllByBookId() {
-        var book = new Book(1, "BookTitle_1", null, null);
         var expectedComments = List.of(
-                new BookComment(1, "Comment_1", book),
-                new BookComment(2, "Comment_2", book)
+                new BookCommentDto(1, "Comment_1"),
+                new BookCommentDto(2, "Comment_2")
         );
 
         var comments = bookCommentService.findAllByBookId(1L);
 
         assertThat(comments)
                 .usingRecursiveComparison()
-                .ignoringFields("book")
                 .isEqualTo(expectedComments);
     }
 
