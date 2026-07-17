@@ -1,0 +1,27 @@
+databaseChangeLog:
+  - changeSet:
+      id: 2026-06-21--0001-book-comments
+      author: shipko
+      changes:
+        - createTable:
+            tableName: book_comments
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: text
+                  type: varchar(1024)
+              - column:
+                  name: book_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_book_comments_books
+                    referencedTableName: books
+                    referencedColumnNames: id
+                    deleteCascade: true
