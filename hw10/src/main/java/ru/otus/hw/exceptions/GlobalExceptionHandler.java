@@ -6,6 +6,7 @@ import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 @Slf4j
 @ControllerAdvice
@@ -34,6 +35,15 @@ public class GlobalExceptionHandler {
         var modelAndView = new ModelAndView("error");
         modelAndView.addObject("message", ex.getMessage());
         modelAndView.setStatus(HttpStatus.METHOD_NOT_ALLOWED);
+
+        return modelAndView;
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ModelAndView handleNoResourceFound(NoResourceFoundException ex) {
+        var modelAndView = new ModelAndView("error");
+        modelAndView.addObject("message", ex.getMessage());
+        modelAndView.setStatus(HttpStatus.NOT_FOUND);
 
         return modelAndView;
     }
