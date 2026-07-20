@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.otus.hw.dto.BookCommentCreateDto;
 import ru.otus.hw.dto.BookCommentDto;
@@ -23,23 +24,24 @@ import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
+@RequestMapping("/api/books")
 public class BookController {
 
     private final BookService bookService;
 
     private final BookCommentService bookCommentService;
 
-    @GetMapping("/api/books")
+    @GetMapping
     public List<BookDto> findAll() {
         return bookService.findAll();
     }
 
-    @GetMapping("/api/books/{id}")
+    @GetMapping("/{id}")
     public BookDto findById(@PathVariable long id) {
         return bookService.findById(id);
     }
 
-    @PostMapping("/api/books")
+    @PostMapping
     public ResponseEntity<BookDto> create(@Valid @RequestBody BookCreateDto bookCreateDto) {
         var createdBook = bookService.insert(bookCreateDto);
         var location = ServletUriComponentsBuilder.fromCurrentRequest()
@@ -50,7 +52,7 @@ public class BookController {
         return ResponseEntity.created(location).body(createdBook);
     }
 
-    @PutMapping("/api/books/{id}")
+    @PutMapping("/{id}")
     public BookDto update(@PathVariable long id,
                           @Valid @RequestBody BookUpdateDto bookUpdateDto) {
         bookUpdateDto.setId(id);
@@ -58,19 +60,19 @@ public class BookController {
         return bookService.update(bookUpdateDto);
     }
 
-    @DeleteMapping("/api/books/{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable long id) {
         bookService.deleteById(id);
 
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/api/books/{id}/comments")
+    @GetMapping("/{id}/comments")
     public List<BookCommentDto> findComments(@PathVariable long id) {
         return bookCommentService.findAllByBookId(id);
     }
 
-    @PostMapping("/api/books/{id}/comments")
+    @PostMapping("/{id}/comments")
     public ResponseEntity<BookCommentDto> addComment(@PathVariable long id,
                                                      @Valid @RequestBody BookCommentCreateDto commentCreateDto) {
         commentCreateDto.setBookId(id);
@@ -84,7 +86,7 @@ public class BookController {
         return ResponseEntity.created(location).body(createdComment);
     }
 
-    @DeleteMapping("/api/books/{id}/comments/{commentId}")
+    @DeleteMapping("/{id}/comments/{commentId}")
     public ResponseEntity<Void> deleteComment(@PathVariable long id,
                                               @PathVariable long commentId) {
         bookCommentService.deleteByIdAndBookId(commentId, id);
