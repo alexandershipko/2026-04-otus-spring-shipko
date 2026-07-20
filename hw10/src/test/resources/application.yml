@@ -1,0 +1,21 @@
+spring:
+  messages:
+    fallback-to-system-locale: false
+
+  output:
+    ansi:
+      enabled: always
+
+  jpa:
+    open-in-view: false
+    generate-ddl: false
+    hibernate:
+      ddl-auto: none
+
+    show-sql: true
+
+  datasource:
+    url: jdbc:h2:mem:testdb
+
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-test.yaml
