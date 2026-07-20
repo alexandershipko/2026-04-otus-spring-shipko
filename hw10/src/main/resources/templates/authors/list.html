@@ -10,6 +10,7 @@
 <body>
 <div th:replace="~{fragments/nav :: nav}"></div>
 <h1 th:text="#{authors.list.title}">Author list</h1>
+<p class="error" id="error-message"></p>
 <table>
     <thead>
     <tr>
@@ -17,15 +18,17 @@
         <th th:text="#{authors.list.fullName}">Full name</th>
     </tr>
     </thead>
-    <tbody>
-    <tr th:each="author : ${authors}">
-        <td th:text="${author.id}"></td>
-        <td th:text="${author.fullName}"></td>
-    </tr>
-    </tbody>
+    <tbody id="authors-body"></tbody>
 </table>
 
 <a href="/books" th:text="#{books.view.back}">Back to book list</a>
+<script th:inline="javascript">
+    window.i18n = {
+        loadError: /*[[#{common.loadError}]]*/ 'Failed to load data'
+    };
+</script>
+<script th:src="@{/js/common.js}"></script>
+<script th:src="@{/js/authors-list.js}"></script>
 </body>
 
 </html>

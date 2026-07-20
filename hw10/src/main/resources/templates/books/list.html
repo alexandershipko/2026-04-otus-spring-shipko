@@ -10,6 +10,7 @@
 <body>
 <div th:replace="~{fragments/nav :: nav}"></div>
 <h1 th:text="#{books.list.title}">Book list</h1>
+<p class="error" id="error-message"></p>
 <a href="/books/new" th:text="#{books.list.add}">Add book</a>
 <table>
     <thead>
@@ -21,27 +22,18 @@
         <th th:text="#{books.list.actions}">Actions</th>
     </tr>
     </thead>
-    <tbody>
-    <tr th:each="book : ${books}">
-        <td th:text="${book.id}"></td>
-        <td><a th:href="@{/books/{id}(id=${book.id})}" th:text="${book.title}"></a></td>
-        <td th:text="${book.author.fullName}"></td>
-        <td>
-            <span th:each="genre, iter : ${book.genres}">
-                <span th:text="${genre.name}"></span><span th:if="${!iter.last}">, </span>
-            </span>
-        </td>
-        <td>
-            <a class="btn" th:href="@{/books/{id}/edit(id=${book.id})}" th:text="#{books.list.edit}">Edit</a>
-            <form th:action="@{/books/{id}/delete(id=${book.id})}" method="post" style="display:inline">
-                <button type="submit" class="btn"
-                        th:text="#{books.list.delete}"
-                        th:onclick="|return confirm('#{books.list.deleteConfirm}')|">Delete</button>
-            </form>
-        </td>
-    </tr>
-    </tbody>
+    <tbody id="books-body"></tbody>
 </table>
+<script th:inline="javascript">
+    window.i18n = {
+        edit: /*[[#{books.list.edit}]]*/ 'Edit',
+        delete: /*[[#{books.list.delete}]]*/ 'Delete',
+        deleteConfirm: /*[[#{books.list.deleteConfirm}]]*/ 'Delete book?',
+        loadError: /*[[#{common.loadError}]]*/ 'Failed to load data'
+    };
+</script>
+<script th:src="@{/js/common.js}"></script>
+<script th:src="@{/js/books-list.js}"></script>
 </body>
 
 </html>

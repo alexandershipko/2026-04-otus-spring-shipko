@@ -62,8 +62,12 @@ public class BookCommentServiceImpl implements BookCommentService {
 
     @Override
     @Transactional
-    public void deleteById(long id) {
-        bookCommentRepository.deleteById(id);
+    public void deleteByIdAndBookId(long id, long bookId) {
+        var comment = bookCommentRepository.findByIdAndBookId(id, bookId)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Comment with id %d not found for book with id %d".formatted(id, bookId)));
+
+        bookCommentRepository.delete(comment);
     }
 
     private static BookCommentDto toBookCommentDto(BookComment comment) {

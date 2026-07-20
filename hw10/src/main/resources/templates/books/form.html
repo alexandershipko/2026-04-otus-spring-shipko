@@ -3,40 +3,45 @@
 
 <head>
     <meta charset="UTF-8">
-    <title th:text="${formAction == '/books'} ? #{books.form.title.new} : #{books.form.title.edit}"></title>
+    <title id="page-title">Book form</title>
     <link rel="stylesheet" th:href="@{/css/style.css}"/>
 </head>
 
 <body>
 <div th:replace="~{fragments/nav :: nav}"></div>
-<h1 th:text="${formAction == '/books'} ? #{books.form.title.new} : #{books.form.title.edit}"></h1>
-<form th:action="@{${formAction}}" th:object="${bookForm}" method="post">
+<h1 id="page-heading"></h1>
+<p class="error" id="error-message"></p>
+<form id="book-form">
     <div>
         <label th:text="#{books.form.label.title}">Title:</label>
-        <input type="text" th:field="*{title}" required/>
-        <span class="error" th:if="${#fields.hasErrors('title')}" th:errors="*{title}"></span>
+        <input type="text" id="title"/>
+        <span class="error" id="title-error"></span>
     </div>
     <div>
         <label th:text="#{books.form.label.author}">Author:</label>
-        <select th:field="*{authorId}" required>
-            <option value="" disabled th:text="#{books.form.select.author}">-- select author --</option>
-            <option th:each="author : ${authors}" th:value="${author.id}" th:text="${author.fullName}"></option>
+        <select id="author-id">
+            <option value="" disabled selected th:text="#{books.form.select.author}">-- select author --</option>
         </select>
-        <span class="error" th:if="${#fields.hasErrors('authorId')}" th:errors="*{authorId}"></span>
+        <span class="error" id="author-error"></span>
     </div>
     <div>
         <p th:text="#{books.form.label.genres}">Genres:</p>
-        <div th:each="genre : ${genres}">
-            <label>
-                <input type="checkbox" th:field="*{genreIds}" th:value="${genre.id}"/>
-                <span th:text="${genre.name}"></span>
-            </label>
-        </div>
-        <span class="error" th:if="${#fields.hasErrors('genreIds')}" th:errors="*{genreIds}"></span>
+        <div id="genres-container"></div>
+        <span class="error" id="genres-error"></span>
     </div>
     <button type="submit" class="btn" th:text="#{books.form.save}">Save</button>
     <a class="btn" href="/books" th:text="#{books.form.cancel}">Cancel</a>
 </form>
+
+<script th:inline="javascript">
+    window.i18n = {
+        titleNew: /*[[#{books.form.title.new}]]*/ 'New book',
+        titleEdit: /*[[#{books.form.title.edit}]]*/ 'Edit book',
+        loadError: /*[[#{common.loadError}]]*/ 'Failed to load data'
+    };
+</script>
+<script th:src="@{/js/common.js}"></script>
+<script th:src="@{/js/books-form.js}"></script>
 </body>
 
 </html>

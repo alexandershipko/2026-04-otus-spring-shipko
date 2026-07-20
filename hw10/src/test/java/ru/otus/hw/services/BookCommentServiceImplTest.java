@@ -8,10 +8,12 @@ import org.springframework.context.annotation.Import;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import ru.otus.hw.dto.BookCommentDto;
+import ru.otus.hw.exceptions.EntityNotFoundException;
 
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @DisplayName("Интеграционный тест сервиса комментариев")
 @DataJpaTest
@@ -47,6 +49,15 @@ class BookCommentServiceImplTest {
         assertThat(comments)
                 .usingRecursiveComparison()
                 .isEqualTo(expectedComments);
+    }
+
+    @DisplayName("не должен удалять комментарий через id другой книги")
+    @Test
+    void shouldNotDeleteCommentThroughAnotherBook() {
+        assertThatThrownBy(() -> bookCommentService.deleteByIdAndBookId(1L, 2L))
+                .isInstanceOf(EntityNotFoundException.class);
+
+        assertThat(bookCommentService.findById(1L)).isNotNull();
     }
 
 }

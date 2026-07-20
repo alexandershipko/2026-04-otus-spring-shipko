@@ -13,4 +13,6 @@ public interface BookCommentRepository extends JpaRepository<BookComment, Long> 
 
     List<BookComment> findAllByBookId(long bookId);
 
+    Optional<BookComment> findByIdAndBookId(long id, long bookId);
+
 }
