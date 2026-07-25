@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Book</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+
+<body>
+<div th:replace="~{fragments/nav :: nav}"></div>
+<h1 id="book-title"></h1>
+<p class="error" id="error-message"></p>
+<p><span th:text="#{books.view.author}">Author:</span> <span id="book-author"></span></p>
+<p>
+    <span th:text="#{books.view.genres}">Genres:</span>
+    <span id="book-genres"></span>
+</p>
+<a class="btn" id="edit-link" th:text="#{books.view.edit}">Edit</a>
+<button type="button" class="btn" id="delete-btn" th:text="#{books.view.delete}">Delete</button>
+
+<h2 th:text="#{books.view.comments}">Comments</h2>
+<ul id="comments-list"></ul>
+
+<form id="comment-form">
+    <label>
+        <span th:text="#{books.view.commentLabel}">Comment text:</span>
+        <input type="text" id="comment-text" required/>
+    </label>
+    <button type="submit" class="btn" th:text="#{books.view.addComment}">Add comment</button>
+</form>
+
+<a href="/books" th:text="#{books.view.back}">Back to book list</a>
+
+<script th:inline="javascript">
+    window.i18n = {
+        deleteConfirm: /*[[#{books.view.deleteConfirm}]]*/ 'Delete book?',
+        noComments: /*[[#{books.view.noComments}]]*/ 'No comments yet',
+        deleteComment: /*[[#{books.view.deleteComment}]]*/ 'Delete',
+        deleteCommentConfirm: /*[[#{books.view.deleteCommentConfirm}]]*/ 'Delete comment?',
+        loadError: /*[[#{common.loadError}]]*/ 'Failed to load data'
+    };
+</script>
+<script th:src="@{/js/common.js}"></script>
+<script th:src="@{/js/books-view.js}"></script>
+</body>
+
+</html>

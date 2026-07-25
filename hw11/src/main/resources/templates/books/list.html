@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title th:text="#{books.list.title}">Book list</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+
+<body>
+<div th:replace="~{fragments/nav :: nav}"></div>
+<h1 th:text="#{books.list.title}">Book list</h1>
+<p class="error" id="error-message"></p>
+<a href="/books/new" th:text="#{books.list.add}">Add book</a>
+<table>
+    <thead>
+    <tr>
+        <th th:text="#{books.list.id}">Id</th>
+        <th th:text="#{books.list.titleColumn}">Title</th>
+        <th th:text="#{books.list.author}">Author</th>
+        <th th:text="#{books.list.genres}">Genres</th>
+        <th th:text="#{books.list.actions}">Actions</th>
+    </tr>
+    </thead>
+    <tbody id="books-body"></tbody>
+</table>
+<script th:inline="javascript">
+    window.i18n = {
+        edit: /*[[#{books.list.edit}]]*/ 'Edit',
+        delete: /*[[#{books.list.delete}]]*/ 'Delete',
+        deleteConfirm: /*[[#{books.list.deleteConfirm}]]*/ 'Delete book?',
+        loadError: /*[[#{common.loadError}]]*/ 'Failed to load data'
+    };
+</script>
+<script th:src="@{/js/common.js}"></script>
+<script th:src="@{/js/books-list.js}"></script>
+</body>
+
+</html>
