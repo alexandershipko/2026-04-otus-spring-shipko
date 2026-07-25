@@ -6,16 +6,12 @@ spring:
     ansi:
       enabled: always
 
-  jpa:
-    open-in-view: false
-    generate-ddl: false
-    hibernate:
-      ddl-auto: none
-
-    show-sql: true
-
-  datasource:
-    url: jdbc:h2:mem:testdb
+  r2dbc:
+    url: r2dbc:h2:mem:///testdb
+    pool:
+      enabled: true
+      min-idle: 1
 
   liquibase:
     change-log: classpath:db/changelog/db.changelog-test.yaml
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1

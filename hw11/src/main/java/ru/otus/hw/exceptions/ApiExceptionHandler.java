@@ -3,12 +3,12 @@ package ru.otus.hw.exceptions;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.HttpRequestMethodNotSupportedException;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.http.converter.HttpMessageNotReadableException;
-import org.springframework.web.servlet.resource.NoResourceFoundException;
+import org.springframework.web.bind.support.WebExchangeBindException;
+import org.springframework.web.reactive.resource.NoResourceFoundException;
+import org.springframework.web.server.MethodNotAllowedException;
+import org.springframework.web.server.ServerWebInputException;
 import ru.otus.hw.dto.ErrorResponse;
 
 import java.util.LinkedHashMap;
@@ -29,14 +29,14 @@ public class ApiExceptionHandler {
     public ResponseEntity<ErrorResponse> handleNoResourceFound(NoResourceFoundException ex) {
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
-                .body(new ErrorResponse(ex.getMessage()));
+                .body(new ErrorResponse(ex.getReason()));
     }
 
-    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
-    public ResponseEntity<ErrorResponse> handleMethodNotSupported(HttpRequestMethodNotSupportedException ex) {
+    @ExceptionHandler(MethodNotAllowedException.class)
+    public ResponseEntity<ErrorResponse> handleMethodNotSupported(MethodNotAllowedException ex) {
         return ResponseEntity
                 .status(HttpStatus.METHOD_NOT_ALLOWED)
-                .body(new ErrorResponse(ex.getMessage()));
+                .body(new ErrorResponse(ex.getReason()));
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
@@ -46,10 +46,10 @@ public class ApiExceptionHandler {
                 .body(new ErrorResponse(ex.getMessage()));
     }
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException ex) {
+    @ExceptionHandler(WebExchangeBindException.class)
+    public ResponseEntity<ErrorResponse> handleValidation(WebExchangeBindException ex) {
         Map<String, String> errors = new LinkedHashMap<>();
-        ex.getBindingResult().getFieldErrors().forEach(fieldError ->
+        ex.getFieldErrors().forEach(fieldError ->
                 errors.put(fieldError.getField(), fieldError.getDefaultMessage()));
 
         return ResponseEntity
@@ -57,11 +57,11 @@ public class ApiExceptionHandler {
                 .body(new ErrorResponse("Validation failed", errors));
     }
 
-    @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<ErrorResponse> handleMessageNotReadable(HttpMessageNotReadableException ex) {
+    @ExceptionHandler(ServerWebInputException.class)
+    public ResponseEntity<ErrorResponse> handleMessageNotReadable(ServerWebInputException ex) {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(new ErrorResponse("Malformed JSON request"));
+                .body(new ErrorResponse(ex.getReason()));
     }
 
     @ExceptionHandler(Exception.class)

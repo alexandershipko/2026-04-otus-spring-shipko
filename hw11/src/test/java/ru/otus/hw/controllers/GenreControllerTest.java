@@ -3,38 +3,36 @@ package ru.otus.hw.controllers;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.reactive.server.WebTestClient;
+import reactor.core.publisher.Flux;
 import ru.otus.hw.dto.GenreDto;
 import ru.otus.hw.services.GenreService;
 
-import java.util.List;
-
 import static org.mockito.BDDMockito.given;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @DisplayName("REST-контроллер жанров")
-@WebMvcTest(GenreController.class)
+@WebFluxTest(GenreController.class)
 class GenreControllerTest {
 
     @Autowired
-    private MockMvc mockMvc;
+    private WebTestClient webTestClient;
 
     @MockitoBean
     private GenreService genreService;
 
     @DisplayName("должен возвращать список жанров")
     @Test
-    void shouldReturnAllGenres() throws Exception {
-        given(genreService.findAll()).willReturn(List.of(new GenreDto(1, "Genre_1")));
+    void shouldReturnAllGenres() {
+        given(genreService.findAll()).willReturn(Flux.just(new GenreDto(1, "Genre_1")));
 
-        mockMvc.perform(get("/api/genres"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").value(1))
-                .andExpect(jsonPath("$[0].name").value("Genre_1"));
+        webTestClient.get().uri("/api/genres")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$[0].id").isEqualTo(1)
+                .jsonPath("$[0].name").isEqualTo("Genre_1");
     }
 
 }

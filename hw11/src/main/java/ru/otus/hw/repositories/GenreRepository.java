@@ -1,15 +1,15 @@
 package ru.otus.hw.repositories;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.r2dbc.repository.Query;
+import org.springframework.data.r2dbc.repository.R2dbcRepository;
+import reactor.core.publisher.Flux;
 import ru.otus.hw.models.Genre;
 
-import java.util.List;
 import java.util.Set;
 
-public interface GenreRepository extends JpaRepository<Genre, Long> {
+public interface GenreRepository extends R2dbcRepository<Genre, Long> {
 
-    @Query("select g from Genre g where g.id in :ids")
-    List<Genre> findAllByIds(Set<Long> ids);
+    @Query("select * from genres where id in (:ids)")
+    Flux<Genre> findAllByIds(Set<Long> ids);
 
 }

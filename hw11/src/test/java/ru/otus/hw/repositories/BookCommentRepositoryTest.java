@@ -2,20 +2,24 @@ package ru.otus.hw.repositories;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
-import ru.otus.hw.models.Book;
+import org.springframework.boot.test.autoconfigure.data.r2dbc.DataR2dbcTest;
+import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
 import ru.otus.hw.models.BookComment;
+import ru.otus.hw.testsupport.LiquibaseResetExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.data.relational.core.query.Criteria.where;
+import static org.springframework.data.relational.core.query.Query.query;
 
-@DisplayName("Репозиторий на основе Jpa для работы с комментариями")
-@DataJpaTest
-class JpaBookCommentRepositoryTest {
+@DisplayName("Репозиторий для работы с комментариями")
+@DataR2dbcTest
+@ExtendWith(LiquibaseResetExtension.class)
+class BookCommentRepositoryTest {
 
     @Autowired
-    private TestEntityManager tem;
+    private R2dbcEntityTemplate entityTemplate;
 
     @Autowired
     private BookCommentRepository repository;
@@ -23,11 +27,10 @@ class JpaBookCommentRepositoryTest {
     @DisplayName("должен загружать комментарий по id")
     @Test
     void shouldReturnCorrectCommentById() {
-        var actualComment = repository.findById(1L);
-        var expectedComment = tem.find(BookComment.class, 1L);
+        var expectedComment = entityTemplate.selectOne(query(where("id").is(1L)), BookComment.class).block();
+        var actualComment = repository.findById(1L).block();
 
-        assertThat(actualComment).isPresent()
-                .get()
+        assertThat(actualComment)
                 .usingRecursiveComparison()
                 .isEqualTo(expectedComment);
     }
@@ -35,7 +38,7 @@ class JpaBookCommentRepositoryTest {
     @DisplayName("должен загружать все комментарии по id книги")
     @Test
     void shouldReturnCorrectCommentsByBookId() {
-        var actualComments = repository.findAllByBookId(1L);
+        var actualComments = repository.findAllByBookId(1L).collectList().block();
 
         assertThat(actualComments).hasSize(2)
                 .allMatch(c -> c.getText() != null && !c.getText().isEmpty());
@@ -44,16 +47,17 @@ class JpaBookCommentRepositoryTest {
     @DisplayName("должен сохранять новый комментарий")
     @Test
     void shouldSaveNewComment() {
-        var book = tem.find(Book.class, 1L);
-        var expectedComment = new BookComment(0, "New comment", book);
+        var expectedComment = new BookComment(0, "New comment", 1L);
 
-        var returnedComment = repository.save(expectedComment);
+        var returnedComment = repository.save(expectedComment).block();
 
         assertThat(returnedComment).isNotNull()
                 .matches(c -> c.getId() > 0)
                 .usingRecursiveComparison().ignoringExpectedNullFields().isEqualTo(expectedComment);
 
-        var foundComment = tem.find(BookComment.class, returnedComment.getId());
+        var foundComment = entityTemplate
+                .selectOne(query(where("id").is(returnedComment.getId())), BookComment.class)
+                .block();
 
         assertThat(foundComment).isNotNull()
                 .usingRecursiveComparison()
@@ -63,12 +67,11 @@ class JpaBookCommentRepositoryTest {
     @DisplayName("должен сохранять измененный комментарий")
     @Test
     void shouldSaveUpdatedComment() {
-        var book = tem.find(Book.class, 2L);
-        var expectedComment = new BookComment(1L, "Updated comment", book);
+        var expectedComment = new BookComment(1L, "Updated comment", 2L);
 
-        repository.save(expectedComment);
+        repository.save(expectedComment).block();
 
-        var foundComment = tem.find(BookComment.class, 1L);
+        var foundComment = entityTemplate.selectOne(query(where("id").is(1L)), BookComment.class).block();
 
         assertThat(foundComment).isNotNull()
                 .usingRecursiveComparison()
@@ -78,11 +81,11 @@ class JpaBookCommentRepositoryTest {
     @DisplayName("должен удалять комментарий по id")
     @Test
     void shouldDeleteComment() {
-        assertThat(tem.find(BookComment.class, 1L)).isNotNull();
+        assertThat(entityTemplate.selectOne(query(where("id").is(1L)), BookComment.class).block()).isNotNull();
 
-        repository.deleteById(1L);
+        repository.deleteById(1L).block();
 
-        assertThat(tem.find(BookComment.class, 1L)).isNull();
+        assertThat(entityTemplate.selectOne(query(where("id").is(1L)), BookComment.class).block()).isNull();
     }
 
 }

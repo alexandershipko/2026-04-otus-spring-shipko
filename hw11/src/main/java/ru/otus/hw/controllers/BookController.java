@@ -3,7 +3,6 @@ package ru.otus.hw.controllers;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -12,6 +11,8 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import ru.otus.hw.dto.BookCommentCreateDto;
 import ru.otus.hw.dto.BookCommentDto;
 import ru.otus.hw.dto.BookCreateDto;
@@ -20,7 +21,7 @@ import ru.otus.hw.dto.BookUpdateDto;
 import ru.otus.hw.services.BookCommentService;
 import ru.otus.hw.services.BookService;
 
-import java.util.List;
+import java.net.URI;
 
 @RequiredArgsConstructor
 @RestController
@@ -32,66 +33,62 @@ public class BookController {
     private final BookCommentService bookCommentService;
 
     @GetMapping
-    public List<BookDto> findAll() {
+    public Flux<BookDto> findAll() {
         return bookService.findAll();
     }
 
     @GetMapping("/{id}")
-    public BookDto findById(@PathVariable long id) {
+    public Mono<BookDto> findById(@PathVariable long id) {
         return bookService.findById(id);
     }
 
     @PostMapping
-    public ResponseEntity<BookDto> create(@Valid @RequestBody BookCreateDto bookCreateDto) {
-        var createdBook = bookService.insert(bookCreateDto);
-        var location = ServletUriComponentsBuilder.fromCurrentRequest()
-                .path("/{id}")
-                .buildAndExpand(createdBook.getId())
-                .toUri();
+    public Mono<ResponseEntity<BookDto>> create(@Valid @RequestBody BookCreateDto bookCreateDto) {
+        return bookService.insert(bookCreateDto)
+                .map(createdBook -> {
+                    var location = URI.create("/api/books/%d".formatted(createdBook.getId()));
 
-        return ResponseEntity.created(location).body(createdBook);
+                    return ResponseEntity.created(location).body(createdBook);
+                });
     }
 
     @PutMapping("/{id}")
-    public BookDto update(@PathVariable long id,
-                          @Valid @RequestBody BookUpdateDto bookUpdateDto) {
+    public Mono<BookDto> update(@PathVariable long id,
+                                @Valid @RequestBody BookUpdateDto bookUpdateDto) {
         bookUpdateDto.setId(id);
 
         return bookService.update(bookUpdateDto);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable long id) {
-        bookService.deleteById(id);
-
-        return ResponseEntity.noContent().build();
+    public Mono<ResponseEntity<Void>> delete(@PathVariable long id) {
+        return bookService.deleteById(id)
+                .thenReturn(ResponseEntity.noContent().build());
     }
 
     @GetMapping("/{id}/comments")
-    public List<BookCommentDto> findComments(@PathVariable long id) {
+    public Flux<BookCommentDto> findComments(@PathVariable long id) {
         return bookCommentService.findAllByBookId(id);
     }
 
     @PostMapping("/{id}/comments")
-    public ResponseEntity<BookCommentDto> addComment(@PathVariable long id,
-                                                     @Valid @RequestBody BookCommentCreateDto commentCreateDto) {
+    public Mono<ResponseEntity<BookCommentDto>> addComment(@PathVariable long id,
+                                                            @Valid @RequestBody BookCommentCreateDto commentCreateDto) {
         commentCreateDto.setBookId(id);
 
-        var createdComment = bookCommentService.insert(commentCreateDto);
-        var location = ServletUriComponentsBuilder.fromCurrentRequest()
-                .path("/{commentId}")
-                .buildAndExpand(createdComment.getId())
-                .toUri();
+        return bookCommentService.insert(commentCreateDto)
+                .map(createdComment -> {
+                    var location = URI.create("/api/books/%d/comments/%d".formatted(id, createdComment.getId()));
 
-        return ResponseEntity.created(location).body(createdComment);
+                    return ResponseEntity.created(location).body(createdComment);
+                });
     }
 
     @DeleteMapping("/{id}/comments/{commentId}")
-    public ResponseEntity<Void> deleteComment(@PathVariable long id,
-                                              @PathVariable long commentId) {
-        bookCommentService.deleteByIdAndBookId(commentId, id);
-
-        return ResponseEntity.noContent().build();
+    public Mono<ResponseEntity<Void>> deleteComment(@PathVariable long id,
+                                                     @PathVariable long commentId) {
+        return bookCommentService.deleteByIdAndBookId(commentId, id)
+                .thenReturn(ResponseEntity.noContent().build());
     }
 
 }

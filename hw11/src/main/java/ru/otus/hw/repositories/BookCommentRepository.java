@@ -1,18 +1,14 @@
 package ru.otus.hw.repositories;
 
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.r2dbc.repository.R2dbcRepository;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import ru.otus.hw.models.BookComment;
 
-import java.util.List;
-import java.util.Optional;
+public interface BookCommentRepository extends R2dbcRepository<BookComment, Long> {
 
-public interface BookCommentRepository extends JpaRepository<BookComment, Long> {
+    Flux<BookComment> findAllByBookId(long bookId);
 
-    @Override
-    Optional<BookComment> findById(Long id);
-
-    List<BookComment> findAllByBookId(long bookId);
-
-    Optional<BookComment> findByIdAndBookId(long id, long bookId);
+    Mono<BookComment> findByIdAndBookId(long id, long bookId);
 
 }

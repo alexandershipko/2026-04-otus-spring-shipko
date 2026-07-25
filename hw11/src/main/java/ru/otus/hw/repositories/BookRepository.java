@@ -1,20 +1,17 @@
 package ru.otus.hw.repositories;
 
-import org.springframework.data.jpa.repository.EntityGraph;
-import org.springframework.data.jpa.repository.JpaRepository;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import ru.otus.hw.models.Book;
 
-import java.util.List;
-import java.util.Optional;
+public interface BookRepository {
 
-public interface BookRepository extends JpaRepository<Book, Long> {
+    Mono<Book> findById(long id);
 
-    @Override
-    @EntityGraph("book-author-genres-graph")
-    Optional<Book> findById(Long id);
+    Flux<Book> findAll();
 
-    @Override
-    @EntityGraph("book-author-graph")
-    List<Book> findAll();
+    Mono<Book> save(Book book);
+
+    Mono<Void> deleteById(long id);
 
 }
