@@ -36,7 +36,7 @@ class GenreRepositoryTest {
     @DisplayName("должен загружать жанры по набору id")
     @Test
     void shouldReturnCorrectGenresByIds() {
-        var actualGenres = repository.findAllByIds(Set.of(1L, 3L, 5L)).collectList().block();
+        var actualGenres = repository.findAllById(Set.of(1L, 3L, 5L)).collectList().block();
 
         var expectedGenres = List.of(
                 new Genre(1, "Genre_1"),
@@ -52,7 +52,7 @@ class GenreRepositoryTest {
     @DisplayName("должен возвращать пустой список для несуществующих id")
     @Test
     void shouldReturnEmptyListForNonExistingIds() {
-        var actualGenres = repository.findAllByIds(Set.of(99L, 100L)).collectList().block();
+        var actualGenres = repository.findAllById(Set.of(99L, 100L)).collectList().block();
 
         assertThat(actualGenres).isEmpty();
     }

@@ -8,7 +8,7 @@ import org.springframework.boot.test.autoconfigure.data.r2dbc.DataR2dbcTest;
 import org.springframework.context.annotation.Import;
 import ru.otus.hw.dto.BookCommentDto;
 import ru.otus.hw.exceptions.EntityNotFoundException;
-import ru.otus.hw.repositories.BookRepositoryImpl;
+import ru.otus.hw.repositories.BookRepository;
 import ru.otus.hw.testsupport.LiquibaseResetExtension;
 
 import java.util.List;
@@ -18,7 +18,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @DisplayName("Интеграционный тест сервиса комментариев")
 @DataR2dbcTest
-@Import({BookRepositoryImpl.class, BookCommentServiceImpl.class})
+@Import({BookRepository.class, BookCommentServiceImpl.class})
 @ExtendWith(LiquibaseResetExtension.class)
 class BookCommentServiceImplTest {
 

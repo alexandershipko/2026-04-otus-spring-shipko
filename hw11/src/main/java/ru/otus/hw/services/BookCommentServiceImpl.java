@@ -40,11 +40,15 @@ public class BookCommentServiceImpl implements BookCommentService {
     @Override
     @Transactional
     public Mono<BookCommentDto> insert(BookCommentCreateDto bookCommentCreateDto) {
-        return bookRepository.findById(bookCommentCreateDto.getBookId())
+        return bookRepository.existsById(bookCommentCreateDto.getBookId())
+                .filter(Boolean::booleanValue)
                 .switchIfEmpty(Mono.error(() -> new EntityNotFoundException(
                         "Book with id %d not found".formatted(bookCommentCreateDto.getBookId()))))
-                .flatMap(book -> {
-                    var comment = new BookComment(0, bookCommentCreateDto.getText(), book.getId());
+                .flatMap(bookExists -> {
+                    var comment = new BookComment(
+                            0,
+                            bookCommentCreateDto.getText(),
+                            bookCommentCreateDto.getBookId());
 
                     return bookCommentRepository.save(comment);
                 })

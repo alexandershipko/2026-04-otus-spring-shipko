@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Import;
 import ru.otus.hw.dto.AuthorDto;
 import ru.otus.hw.dto.BookDto;
 import ru.otus.hw.dto.GenreDto;
-import ru.otus.hw.repositories.BookRepositoryImpl;
+import ru.otus.hw.repositories.BookRepository;
 import ru.otus.hw.testsupport.LiquibaseResetExtension;
 
 import java.util.List;
@@ -18,7 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @DisplayName("Интеграционный тест сервиса книг")
 @DataR2dbcTest
-@Import({BookRepositoryImpl.class, BookServiceImpl.class})
+@Import({BookRepository.class, BookServiceImpl.class})
 @ExtendWith(LiquibaseResetExtension.class)
 class BookServiceImplTest {
 
