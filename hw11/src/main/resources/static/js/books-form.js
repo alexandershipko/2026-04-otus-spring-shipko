@@ -1,4 +1,4 @@
-const editMatch = window.location.pathname.match(/^\/books\/(\d+)\/edit$/);
+const editMatch = window.location.pathname.match(/^\/books\/([^/]+)\/edit$/);
 const bookId = editMatch ? editMatch[1] : null;
 const isEdit = bookId !== null;
 
@@ -72,9 +72,9 @@ function submitForm(event) {
 
     const payload = {
         title: document.getElementById('title').value,
-        authorId: Number(document.getElementById('author-id').value),
+        authorId: document.getElementById('author-id').value,
         genreIds: Array.from(document.querySelectorAll('#genres-container input[type=checkbox]:checked'))
-            .map(checkbox => Number(checkbox.value))
+            .map(checkbox => checkbox.value)
     };
 
     const url = isEdit ? `/api/books/${bookId}` : '/api/books';

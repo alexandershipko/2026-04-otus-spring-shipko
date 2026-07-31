@@ -5,20 +5,20 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.relational.core.mapping.Column;
-import org.springframework.data.relational.core.mapping.Table;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Table("authors")
+@Document(collection = "authors")
 @EqualsAndHashCode(of = "id")
 public class Author {
 
     @Id
-    private long id;
+    private String id;
 
-    @Column("full_name")
+    @Field(name = "full_name")
     private String fullName;
 
 }

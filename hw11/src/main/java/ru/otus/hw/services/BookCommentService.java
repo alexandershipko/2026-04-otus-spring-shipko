@@ -7,13 +7,13 @@ import ru.otus.hw.dto.BookCommentDto;
 import ru.otus.hw.dto.BookCommentUpdateDto;
 
 public interface BookCommentService {
-    Mono<BookCommentDto> findById(long id);
+    Mono<BookCommentDto> findById(String id);
 
-    Flux<BookCommentDto> findAllByBookId(long bookId);
+    Flux<BookCommentDto> findAllByBookId(String bookId);
 
     Mono<BookCommentDto> insert(BookCommentCreateDto bookCommentCreateDto);
 
     Mono<BookCommentDto> update(BookCommentUpdateDto bookCommentUpdateDto);
 
-    Mono<Void> deleteByIdAndBookId(long id, long bookId);
+    Mono<Void> deleteByIdAndBookId(String id, String bookId);
 }

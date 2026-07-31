@@ -38,7 +38,7 @@ public class BookController {
     }
 
     @GetMapping("/{id}")
-    public Mono<BookDto> findById(@PathVariable long id) {
+    public Mono<BookDto> findById(@PathVariable String id) {
         return bookService.findById(id);
     }
 
@@ -46,14 +46,14 @@ public class BookController {
     public Mono<ResponseEntity<BookDto>> create(@Valid @RequestBody BookCreateDto bookCreateDto) {
         return bookService.insert(bookCreateDto)
                 .map(createdBook -> {
-                    var location = URI.create("/api/books/%d".formatted(createdBook.getId()));
+                    var location = URI.create("/api/books/%s".formatted(createdBook.getId()));
 
                     return ResponseEntity.created(location).body(createdBook);
                 });
     }
 
     @PutMapping("/{id}")
-    public Mono<BookDto> update(@PathVariable long id,
+    public Mono<BookDto> update(@PathVariable String id,
                                 @Valid @RequestBody BookUpdateDto bookUpdateDto) {
         bookUpdateDto.setId(id);
 
@@ -61,32 +61,32 @@ public class BookController {
     }
 
     @DeleteMapping("/{id}")
-    public Mono<ResponseEntity<Void>> delete(@PathVariable long id) {
+    public Mono<ResponseEntity<Void>> delete(@PathVariable String id) {
         return bookService.deleteById(id)
                 .thenReturn(ResponseEntity.noContent().build());
     }
 
     @GetMapping("/{id}/comments")
-    public Flux<BookCommentDto> findComments(@PathVariable long id) {
+    public Flux<BookCommentDto> findComments(@PathVariable String id) {
         return bookCommentService.findAllByBookId(id);
     }
 
     @PostMapping("/{id}/comments")
-    public Mono<ResponseEntity<BookCommentDto>> addComment(@PathVariable long id,
-                                                            @Valid @RequestBody BookCommentCreateDto commentCreateDto) {
+    public Mono<ResponseEntity<BookCommentDto>> addComment(@PathVariable String id,
+                                                           @Valid @RequestBody BookCommentCreateDto commentCreateDto) {
         commentCreateDto.setBookId(id);
 
         return bookCommentService.insert(commentCreateDto)
                 .map(createdComment -> {
-                    var location = URI.create("/api/books/%d/comments/%d".formatted(id, createdComment.getId()));
+                    var location = URI.create("/api/books/%s/comments/%s".formatted(id, createdComment.getId()));
 
                     return ResponseEntity.created(location).body(createdComment);
                 });
     }
 
     @DeleteMapping("/{id}/comments/{commentId}")
-    public Mono<ResponseEntity<Void>> deleteComment(@PathVariable long id,
-                                                     @PathVariable long commentId) {
+    public Mono<ResponseEntity<Void>> deleteComment(@PathVariable String id,
+                                                    @PathVariable String commentId) {
         return bookCommentService.deleteByIdAndBookId(commentId, id)
                 .thenReturn(ResponseEntity.noContent().build());
     }

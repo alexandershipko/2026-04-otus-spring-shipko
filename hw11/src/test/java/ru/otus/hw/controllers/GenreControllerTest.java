@@ -25,13 +25,13 @@ class GenreControllerTest {
     @DisplayName("должен возвращать список жанров")
     @Test
     void shouldReturnAllGenres() {
-        given(genreService.findAll()).willReturn(Flux.just(new GenreDto(1, "Genre_1")));
+        given(genreService.findAll()).willReturn(Flux.just(new GenreDto("1", "Genre_1")));
 
         webTestClient.get().uri("/api/genres")
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody()
-                .jsonPath("$[0].id").isEqualTo(1)
+                .jsonPath("$[0].id").isEqualTo("1")
                 .jsonPath("$[0].name").isEqualTo("Genre_1");
     }
 

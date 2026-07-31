@@ -2,7 +2,6 @@ package ru.otus.hw.services;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.otus.hw.dto.BookCommentCreateDto;
@@ -22,31 +21,28 @@ public class BookCommentServiceImpl implements BookCommentService {
     private final BookRepository bookRepository;
 
     @Override
-    @Transactional(readOnly = true)
-    public Mono<BookCommentDto> findById(long id) {
+    public Mono<BookCommentDto> findById(String id) {
         return bookCommentRepository.findById(id)
                 .switchIfEmpty(Mono.error(() ->
-                        new EntityNotFoundException("Comment with id %d not found".formatted(id))))
+                        new EntityNotFoundException("Comment with id %s not found".formatted(id))))
                 .map(BookCommentServiceImpl::toBookCommentDto);
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public Flux<BookCommentDto> findAllByBookId(long bookId) {
+    public Flux<BookCommentDto> findAllByBookId(String bookId) {
         return bookCommentRepository.findAllByBookId(bookId)
                 .map(BookCommentServiceImpl::toBookCommentDto);
     }
 
     @Override
-    @Transactional
     public Mono<BookCommentDto> insert(BookCommentCreateDto bookCommentCreateDto) {
         return bookRepository.existsById(bookCommentCreateDto.getBookId())
                 .filter(Boolean::booleanValue)
                 .switchIfEmpty(Mono.error(() -> new EntityNotFoundException(
-                        "Book with id %d not found".formatted(bookCommentCreateDto.getBookId()))))
+                        "Book with id %s not found".formatted(bookCommentCreateDto.getBookId()))))
                 .flatMap(bookExists -> {
                     var comment = new BookComment(
-                            0,
+                            null,
                             bookCommentCreateDto.getText(),
                             bookCommentCreateDto.getBookId());
 
@@ -56,11 +52,10 @@ public class BookCommentServiceImpl implements BookCommentService {
     }
 
     @Override
-    @Transactional
     public Mono<BookCommentDto> update(BookCommentUpdateDto bookCommentUpdateDto) {
         return bookCommentRepository.findById(bookCommentUpdateDto.getId())
                 .switchIfEmpty(Mono.error(() -> new EntityNotFoundException(
-                        "Comment with id %d not found".formatted(bookCommentUpdateDto.getId()))))
+                        "Comment with id %s not found".formatted(bookCommentUpdateDto.getId()))))
                 .flatMap(comment -> {
                     comment.setText(bookCommentUpdateDto.getText());
 
@@ -70,11 +65,10 @@ public class BookCommentServiceImpl implements BookCommentService {
     }
 
     @Override
-    @Transactional
-    public Mono<Void> deleteByIdAndBookId(long id, long bookId) {
+    public Mono<Void> deleteByIdAndBookId(String id, String bookId) {
         return bookCommentRepository.findByIdAndBookId(id, bookId)
                 .switchIfEmpty(Mono.error(() -> new EntityNotFoundException(
-                        "Comment with id %d not found for book with id %d".formatted(id, bookId))))
+                        "Comment with id %s not found for book with id %s".formatted(id, bookId))))
                 .flatMap(bookCommentRepository::delete);
     }
 

@@ -13,6 +13,6 @@ public class BookCommentCreateDto {
     @NotBlank(message = "{books.view.validation.comment.notBlank}")
     private String text;
 
-    private long bookId;
+    private String bookId;
 
 }

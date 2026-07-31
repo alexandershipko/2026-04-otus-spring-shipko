@@ -1,114 +1,144 @@
 package ru.otus.hw.repositories;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.data.r2dbc.DataR2dbcTest;
-import org.springframework.context.annotation.Import;
-import ru.otus.hw.dto.AuthorDto;
-import ru.otus.hw.dto.BookDto;
-import ru.otus.hw.dto.GenreDto;
-import ru.otus.hw.testsupport.LiquibaseResetExtension;
+import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
+import ru.otus.hw.models.Author;
+import ru.otus.hw.models.Book;
+import ru.otus.hw.models.Genre;
 
 import java.util.List;
-import java.util.Set;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@DisplayName("Query и command репозитории книг")
-@DataR2dbcTest
-@Import(BookRepository.class)
-@ExtendWith(LiquibaseResetExtension.class)
+@DisplayName("Репозиторий на основе Mongo для работы с книгами")
+@DataMongoTest
 class BookRepositoryTest {
+
+    @Autowired
+    private AuthorRepository authorRepository;
+
+    @Autowired
+    private GenreRepository genreRepository;
 
     @Autowired
     private BookRepository repository;
 
-    @DisplayName("должен загружать книгу по id одним read-контрактом")
-    @Test
-    void shouldReturnCorrectBookById() {
-        var expectedBook = bookDto(1, 1, 1, 2);
+    private List<Author> dbAuthors;
 
-        var actualBook = repository.findById(1L).block();
+    private List<Genre> dbGenres;
+
+    private List<Book> dbBooks;
+
+    @BeforeEach
+    void setUp() {
+        repository.deleteAll().block();
+        authorRepository.deleteAll().block();
+        genreRepository.deleteAll().block();
+
+        dbAuthors = authorRepository.saveAll(IntStream.range(1, 4).boxed()
+                        .map(id -> new Author(null, "Author_" + id))
+                        .toList())
+                .collectList()
+                .block();
+
+        dbGenres = genreRepository.saveAll(IntStream.range(1, 7).boxed()
+                        .map(id -> new Genre(null, "Genre_" + id))
+                        .toList())
+                .collectList()
+                .block();
+
+        dbBooks = repository.saveAll(IntStream.range(1, 4).boxed()
+                        .map(id -> new Book(null,
+                                "BookTitle_" + id,
+                                dbAuthors.get(id - 1),
+                                dbGenres.subList((id - 1) * 2, (id - 1) * 2 + 2)))
+                        .toList())
+                .collectList()
+                .block();
+    }
+
+    private static Stream<Integer> bookIndexes() {
+        return Stream.of(0, 1, 2);
+    }
+
+    @DisplayName("должен загружать книгу по id")
+    @ParameterizedTest
+    @MethodSource("bookIndexes")
+    void shouldReturnCorrectBookById(int index) {
+        var expectedBook = dbBooks.get(index);
+
+        var actualBook = repository.findById(expectedBook.getId()).block();
 
         assertThat(actualBook)
                 .usingRecursiveComparison()
                 .isEqualTo(expectedBook);
     }
 
-    @DisplayName("должен потоково собирать все книги из join-строк")
+    @DisplayName("должен загружать список всех книг")
     @Test
     void shouldReturnCorrectBooksList() {
-        var expectedBooks = List.of(
-                bookDto(1, 1, 1, 2),
-                bookDto(2, 2, 3, 4),
-                bookDto(3, 3, 5, 6)
-        );
-
         var actualBooks = repository.findAll().collectList().block();
 
         assertThat(actualBooks)
                 .usingRecursiveComparison()
-                .isEqualTo(expectedBooks);
+                .ignoringCollectionOrder()
+                .isEqualTo(dbBooks);
     }
 
-    @DisplayName("должен создавать книгу через command-контракт")
+    @DisplayName("должен сохранять новую книгу")
     @Test
-    void shouldInsertBook() {
-        var bookId = repository.insert("BookTitle_10500", 1L, Set.of(1L, 3L)).block();
+    void shouldSaveNewBook() {
+        var expectedBook = new Book(null, "BookTitle_10500", dbAuthors.get(0),
+                List.of(dbGenres.get(0), dbGenres.get(2)));
 
-        assertThat(bookId).isNotNull().isPositive();
+        var returnedBook = repository.save(expectedBook).block();
+
+        assertThat(returnedBook.getId()).isNotNull();
+
+        var foundBook = repository.findById(returnedBook.getId()).block();
+
+        assertThat(foundBook)
+                .usingRecursiveComparison()
+                .isEqualTo(returnedBook);
+    }
+
+    @DisplayName("должен сохранять измененную книгу")
+    @Test
+    void shouldSaveUpdatedBook() {
+        var bookId = dbBooks.get(0).getId();
+        var expectedBook = new Book(bookId, "BookTitle_10500", dbAuthors.get(2),
+                List.of(dbGenres.get(4), dbGenres.get(5)));
+
         assertThat(repository.findById(bookId).block())
                 .usingRecursiveComparison()
-                .isEqualTo(new BookDto(
-                        bookId,
-                        "BookTitle_10500",
-                        new AuthorDto(1, "Author_1"),
-                        List.of(new GenreDto(1, "Genre_1"), new GenreDto(3, "Genre_3"))));
-    }
+                .isNotEqualTo(expectedBook);
 
-    @DisplayName("должен обновлять книгу и заменять связи жанров через command-контракт")
-    @Test
-    void shouldUpdateBook() {
-        assertThat(repository.update(1L, "BookTitle_10500", 3L, Set.of(5L, 6L)).block())
-                .isTrue();
+        repository.save(expectedBook).block();
 
-        assertThat(repository.findById(1L).block())
+        var foundBook = repository.findById(bookId).block();
+
+        assertThat(foundBook)
                 .usingRecursiveComparison()
-                .isEqualTo(new BookDto(
-                        1L,
-                        "BookTitle_10500",
-                        new AuthorDto(3L, "Author_3"),
-                        List.of(new GenreDto(5L, "Genre_5"), new GenreDto(6L, "Genre_6"))));
+                .isEqualTo(expectedBook);
     }
 
-    @DisplayName("не должен заменять связи жанров при обновлении отсутствующей книги")
-    @Test
-    void shouldNotUpdateMissingBook() {
-        assertThat(repository.update(99L, "Missing", 1L, Set.of(1L)).block())
-                .isFalse();
-    }
-
-    @DisplayName("должен удалять книгу через command-контракт")
+    @DisplayName("должен удалять книгу по id")
     @Test
     void shouldDeleteBook() {
-        assertThat(repository.existsById(1L).block()).isTrue();
+        var bookId = dbBooks.get(0).getId();
 
-        repository.deleteById(1L).block();
+        assertThat(repository.findById(bookId).block()).isNotNull();
 
-        assertThat(repository.existsById(1L).block()).isFalse();
-    }
+        repository.deleteById(bookId).block();
 
-    private static BookDto bookDto(long bookId, long authorId, long firstGenreId, long secondGenreId) {
-        return new BookDto(
-                bookId,
-                "BookTitle_" + bookId,
-                new AuthorDto(authorId, "Author_" + authorId),
-                List.of(
-                        new GenreDto(firstGenreId, "Genre_" + firstGenreId),
-                        new GenreDto(secondGenreId, "Genre_" + secondGenreId)
-                ));
+        assertThat(repository.findById(bookId).block()).isNull();
     }
 
 }

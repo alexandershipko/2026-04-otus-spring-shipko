@@ -18,9 +18,9 @@ public class BookCreateDto {
     private String title;
 
     @NotNull(message = "{books.form.validation.author.notNull}")
-    private Long authorId;
+    private String authorId;
 
     @NotEmpty(message = "{books.form.validation.genres.notEmpty}")
-    private Set<Long> genreIds;
+    private Set<String> genreIds;
 
 }

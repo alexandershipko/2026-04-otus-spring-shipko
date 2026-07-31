@@ -43,7 +43,7 @@ class BookControllerTest {
     private BookCommentService bookCommentService;
 
     private final BookDto bookDto =
-            new BookDto(1, "BookTitle_1", new AuthorDto(1, "Author_1"), List.of(new GenreDto(1, "Genre_1")));
+            new BookDto("1", "BookTitle_1", new AuthorDto("1", "Author_1"), List.of(new GenreDto("1", "Genre_1")));
 
     @DisplayName("должен возвращать список книг")
     @Test
@@ -54,14 +54,14 @@ class BookControllerTest {
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody()
-                .jsonPath("$[0].id").isEqualTo(1)
+                .jsonPath("$[0].id").isEqualTo("1")
                 .jsonPath("$[0].title").isEqualTo("BookTitle_1");
     }
 
     @DisplayName("должен возвращать книгу по id")
     @Test
     void shouldReturnBookById() {
-        given(bookService.findById(1L)).willReturn(Mono.just(bookDto));
+        given(bookService.findById("1")).willReturn(Mono.just(bookDto));
 
         webTestClient.get().uri("/api/books/1")
                 .exchange()
@@ -73,7 +73,7 @@ class BookControllerTest {
     @DisplayName("должен возвращать 404 с JSON при отсутствии книги")
     @Test
     void shouldReturnNotFoundJsonForMissingBook() {
-        given(bookService.findById(99L))
+        given(bookService.findById("99"))
                 .willReturn(Mono.error(new EntityNotFoundException("Book with id 99 not found")));
 
         webTestClient.get().uri("/api/books/99")
@@ -86,7 +86,7 @@ class BookControllerTest {
     @DisplayName("должен создавать книгу")
     @Test
     void shouldCreateBook() {
-        var createDto = new BookCreateDto("NewBook", 1L, Set.of(1L));
+        var createDto = new BookCreateDto("NewBook", "1", Set.of("1"));
         given(bookService.insert(createDto)).willReturn(Mono.just(bookDto));
 
         webTestClient.post().uri("/api/books")
@@ -120,8 +120,8 @@ class BookControllerTest {
     @DisplayName("должен обновлять книгу, подставляя id из пути")
     @Test
     void shouldUpdateBook() {
-        var requestBody = new BookUpdateDto(0, "UpdatedBook", 1L, Set.of(1L));
-        given(bookService.update(new BookUpdateDto(1L, "UpdatedBook", 1L, Set.of(1L))))
+        var requestBody = new BookUpdateDto(null, "UpdatedBook", "1", Set.of("1"));
+        given(bookService.update(new BookUpdateDto("1", "UpdatedBook", "1", Set.of("1"))))
                 .willReturn(Mono.just(bookDto));
 
         webTestClient.put().uri("/api/books/1")
@@ -132,13 +132,13 @@ class BookControllerTest {
                 .expectBody()
                 .jsonPath("$.title").isEqualTo("BookTitle_1");
 
-        verify(bookService).update(eq(new BookUpdateDto(1L, "UpdatedBook", 1L, Set.of(1L))));
+        verify(bookService).update(eq(new BookUpdateDto("1", "UpdatedBook", "1", Set.of("1"))));
     }
 
     @DisplayName("должен возвращать 400 при невалидном теле обновления книги")
     @Test
     void shouldReturnBadRequestForInvalidUpdateBody() {
-        var invalidDto = new BookUpdateDto(0, " ", null, Set.of());
+        var invalidDto = new BookUpdateDto(null, " ", null, Set.of());
 
         webTestClient.put().uri("/api/books/1")
                 .contentType(APPLICATION_JSON)
@@ -168,19 +168,19 @@ class BookControllerTest {
     @DisplayName("должен удалять книгу")
     @Test
     void shouldDeleteBook() {
-        given(bookService.deleteById(1L)).willReturn(Mono.empty());
+        given(bookService.deleteById("1")).willReturn(Mono.empty());
 
         webTestClient.delete().uri("/api/books/1")
                 .exchange()
                 .expectStatus().isNoContent();
 
-        verify(bookService).deleteById(1L);
+        verify(bookService).deleteById("1");
     }
 
     @DisplayName("должен возвращать 404 при удалении отсутствующей книги")
     @Test
     void shouldReturnNotFoundWhenDeletingMissingBook() {
-        given(bookService.deleteById(99L))
+        given(bookService.deleteById("99"))
                 .willReturn(Mono.error(new EntityNotFoundException("Book with id 99 not found")));
 
         webTestClient.delete().uri("/api/books/99")
@@ -194,7 +194,7 @@ class BookControllerTest {
     @DisplayName("должен возвращать комментарии книги")
     @Test
     void shouldReturnComments() {
-        given(bookCommentService.findAllByBookId(1L)).willReturn(Flux.just(new BookCommentDto(1, "Comment_1")));
+        given(bookCommentService.findAllByBookId("1")).willReturn(Flux.just(new BookCommentDto("1", "Comment_1")));
 
         webTestClient.get().uri("/api/books/1/comments")
                 .exchange()
@@ -206,19 +206,19 @@ class BookControllerTest {
     @DisplayName("должен добавлять комментарий, подставляя id книги из пути")
     @Test
     void shouldAddComment() {
-        given(bookCommentService.insert(new BookCommentCreateDto("NewComment", 1L)))
-                .willReturn(Mono.just(new BookCommentDto(2, "NewComment")));
+        given(bookCommentService.insert(new BookCommentCreateDto("NewComment", "1")))
+                .willReturn(Mono.just(new BookCommentDto("2", "NewComment")));
 
         webTestClient.post().uri("/api/books/1/comments")
                 .contentType(APPLICATION_JSON)
-                .bodyValue(new BookCommentCreateDto("NewComment", 0))
+                .bodyValue(new BookCommentCreateDto("NewComment", null))
                 .exchange()
                 .expectStatus().isCreated()
                 .expectHeader().valueEquals(HttpHeaders.LOCATION, "/api/books/1/comments/2")
                 .expectBody()
                 .jsonPath("$.text").isEqualTo("NewComment");
 
-        verify(bookCommentService).insert(eq(new BookCommentCreateDto("NewComment", 1L)));
+        verify(bookCommentService).insert(eq(new BookCommentCreateDto("NewComment", "1")));
     }
 
     @DisplayName("должен возвращать 400 для пустого комментария")
@@ -226,7 +226,7 @@ class BookControllerTest {
     void shouldReturnBadRequestForBlankComment() {
         webTestClient.post().uri("/api/books/1/comments")
                 .contentType(APPLICATION_JSON)
-                .bodyValue(new BookCommentCreateDto(" ", 0))
+                .bodyValue(new BookCommentCreateDto(" ", null))
                 .exchange()
                 .expectStatus().isBadRequest()
                 .expectBody()
@@ -236,19 +236,19 @@ class BookControllerTest {
     @DisplayName("должен удалять комментарий")
     @Test
     void shouldDeleteComment() {
-        given(bookCommentService.deleteByIdAndBookId(2L, 1L)).willReturn(Mono.empty());
+        given(bookCommentService.deleteByIdAndBookId("2", "1")).willReturn(Mono.empty());
 
         webTestClient.delete().uri("/api/books/1/comments/2")
                 .exchange()
                 .expectStatus().isNoContent();
 
-        verify(bookCommentService).deleteByIdAndBookId(2L, 1L);
+        verify(bookCommentService).deleteByIdAndBookId("2", "1");
     }
 
     @DisplayName("должен учитывать книгу при удалении комментария")
     @Test
     void shouldReturnNotFoundWhenCommentBelongsToAnotherBook() {
-        given(bookCommentService.deleteByIdAndBookId(2L, 3L))
+        given(bookCommentService.deleteByIdAndBookId("2", "3"))
                 .willReturn(Mono.error(new EntityNotFoundException("Comment with id 2 not found for book with id 3")));
 
         webTestClient.delete().uri("/api/books/3/comments/2")

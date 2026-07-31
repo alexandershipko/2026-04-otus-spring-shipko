@@ -14,15 +14,15 @@ import java.util.Set;
 @AllArgsConstructor
 public class BookUpdateDto {
 
-    private long id;
+    private String id;
 
     @NotBlank(message = "{books.form.validation.title.notBlank}")
     private String title;
 
     @NotNull(message = "{books.form.validation.author.notNull}")
-    private Long authorId;
+    private String authorId;
 
     @NotEmpty(message = "{books.form.validation.genres.notEmpty}")
-    private Set<Long> genreIds;
+    private Set<String> genreIds;
 
 }

@@ -2,12 +2,22 @@ spring:
   messages:
     fallback-to-system-locale: false
 
-  r2dbc:
-    url: r2dbc:h2:mem:///maindb
-    pool:
-      enabled: true
-      min-idle: 1
+  data:
+    mongodb:
+      port: 37017
+      database: library
 
-  liquibase:
-    change-log: classpath:db/changelog/db.changelog-master.yaml
-    url: jdbc:h2:mem:maindb;DB_CLOSE_DELAY=-1
+mongock:
+  runner-type: "InitializingBean"
+  migration-scan-package: ru.otus.hw.migrations
+  transactional: false
+  mongo-db:
+    write-concern:
+      journal: false
+    read-concern: local
+
+de:
+  flapdoodle:
+    mongodb:
+      embedded:
+        version: 7.0.14

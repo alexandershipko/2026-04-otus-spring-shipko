@@ -1,4 +1,4 @@
-const bookId = window.location.pathname.match(/^\/books\/(\d+)$/)[1];
+const bookId = window.location.pathname.match(/^\/books\/([^/]+)$/)[1];
 
 document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('edit-link').href = `/books/${bookId}/edit`;

@@ -25,13 +25,13 @@ class AuthorControllerTest {
     @DisplayName("должен возвращать список авторов")
     @Test
     void shouldReturnAllAuthors() {
-        given(authorService.findAll()).willReturn(Flux.just(new AuthorDto(1, "Author_1")));
+        given(authorService.findAll()).willReturn(Flux.just(new AuthorDto("1", "Author_1")));
 
         webTestClient.get().uri("/api/authors")
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody()
-                .jsonPath("$[0].id").isEqualTo(1)
+                .jsonPath("$[0].id").isEqualTo("1")
                 .jsonPath("$[0].fullName").isEqualTo("Author_1");
     }
 
