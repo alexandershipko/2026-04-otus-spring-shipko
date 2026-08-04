@@ -1,0 +1,23 @@
+spring:
+  messages:
+    fallback-to-system-locale: false
+
+  data:
+    mongodb:
+      port: 37017
+      database: library
+
+mongock:
+  runner-type: "InitializingBean"
+  migration-scan-package: ru.otus.hw.migrations
+  transactional: false
+  mongo-db:
+    write-concern:
+      journal: false
+    read-concern: local
+
+de:
+  flapdoodle:
+    mongodb:
+      embedded:
+        version: 7.0.14

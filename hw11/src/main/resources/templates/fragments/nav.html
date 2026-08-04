@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<body>
+<div th:fragment="nav">
+    <nav>
+        <a th:href="@{/books}" th:text="#{nav.books}">Books</a> |
+        <a th:href="@{/authors}" th:text="#{nav.authors}">Authors</a> |
+        <a th:href="@{/genres}" th:text="#{nav.genres}">Genres</a>
+        &nbsp;|&nbsp;
+        <a th:href="@{/books(lang=ru)}">RU</a>
+        <a th:href="@{/books(lang=en_US)}">EN</a>
+    </nav>
+    <hr/>
+</div>
+</body>
+
+</html>
