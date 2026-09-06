@@ -44,6 +44,8 @@ public class BookCommentServiceImpl implements BookCommentService {
 
     @Override
     @Transactional
+    @PreAuthorize("hasRole('ADMIN') or "
+            + "hasPermission(#bookCommentCreateDto.bookId, 'ru.otus.hw.models.Book', 'READ')")
     public BookCommentDto insert(BookCommentCreateDto bookCommentCreateDto) {
         var book = bookRepository.findById(bookCommentCreateDto.getBookId())
                 .orElseThrow(() -> new EntityNotFoundException(

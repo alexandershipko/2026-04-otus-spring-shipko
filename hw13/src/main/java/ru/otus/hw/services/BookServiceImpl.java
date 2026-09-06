@@ -1,6 +1,7 @@
 package ru.otus.hw.services;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PostFilter;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.acls.domain.BasePermission;
 import org.springframework.stereotype.Service;
@@ -36,6 +37,7 @@ public class BookServiceImpl implements BookService {
 
     @Override
     @Transactional(readOnly = true)
+    @PreAuthorize("hasRole('ADMIN') or hasPermission(#id, 'ru.otus.hw.models.Book', 'READ')")
     public BookDto findById(long id) {
         var book = bookRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Book with id %d not found".formatted(id)));
@@ -45,6 +47,7 @@ public class BookServiceImpl implements BookService {
 
     @Override
     @Transactional(readOnly = true)
+    @PostFilter("hasRole('ADMIN') or hasPermission(filterObject.id, 'ru.otus.hw.models.Book', 'READ')")
     public List<BookDto> findAll() {
         return bookRepository.findAll().stream()
                 .map(BookServiceImpl::toBookDto)
@@ -53,7 +56,6 @@ public class BookServiceImpl implements BookService {
 
     @Override
     @Transactional
-    @PreAuthorize("hasRole('ADMIN')")
     public BookDto insert(BookCreateDto bookCreateDto) {
         var genresIds = bookCreateDto.getGenreIds();
         var genres = findGenresOrThrow(genresIds);
@@ -62,7 +64,8 @@ public class BookServiceImpl implements BookService {
         var book = new Book(0, bookCreateDto.getTitle(), author, genres);
         var savedBook = bookRepository.save(book);
 
-        aclPermissionService.grantOwnerPermissions(savedBook, BasePermission.WRITE, BasePermission.DELETE);
+        aclPermissionService.grantOwnerPermissions(savedBook,
+                BasePermission.READ, BasePermission.WRITE, BasePermission.DELETE);
 
         return toBookDto(savedBook);
     }

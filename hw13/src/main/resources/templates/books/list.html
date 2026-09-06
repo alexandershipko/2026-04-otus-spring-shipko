@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
 
 <head>
     <meta charset="UTF-8">
@@ -10,7 +10,7 @@
 <body>
 <div th:replace="~{fragments/nav :: nav}"></div>
 <h1 th:text="#{books.list.title}">Book list</h1>
-<a sec:authorize="hasRole('ADMIN')" href="/books/new" th:text="#{books.list.add}">Add book</a>
+<a href="/books/new" th:text="#{books.list.add}">Add book</a>
 <table>
     <thead>
     <tr>
@@ -31,7 +31,7 @@
                 <span th:text="${genre.name}"></span><span th:if="${!iter.last}">, </span>
             </span>
         </td>
-        <td sec:authorize="hasRole('ADMIN')">
+        <td>
             <a class="btn" th:href="@{/books/{id}/edit(id=${book.id})}" th:text="#{books.list.edit}">Edit</a>
             <form th:action="@{/books/{id}/delete(id=${book.id})}" method="post" style="display:inline">
                 <button type="submit" class="btn"
