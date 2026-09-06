@@ -1,6 +1,8 @@
 package ru.otus.hw.services;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.acls.domain.BasePermission;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.otus.hw.dto.BookCommentCreateDto;
@@ -20,6 +22,8 @@ public class BookCommentServiceImpl implements BookCommentService {
     private final BookCommentRepository bookCommentRepository;
 
     private final BookRepository bookRepository;
+
+    private final AclPermissionService aclPermissionService;
 
     @Override
     @Transactional(readOnly = true)
@@ -45,12 +49,17 @@ public class BookCommentServiceImpl implements BookCommentService {
                 .orElseThrow(() -> new EntityNotFoundException(
                         "Book with id %d not found".formatted(bookCommentCreateDto.getBookId())));
         var comment = new BookComment(0, bookCommentCreateDto.getText(), book);
+        var savedComment = bookCommentRepository.save(comment);
 
-        return toBookCommentDto(bookCommentRepository.save(comment));
+        aclPermissionService.grantOwnerPermissions(savedComment, BasePermission.WRITE, BasePermission.DELETE);
+
+        return toBookCommentDto(savedComment);
     }
 
     @Override
     @Transactional
+    @PreAuthorize("hasRole('ADMIN') or "
+            + "hasPermission(#bookCommentUpdateDto.id, 'ru.otus.hw.models.BookComment', 'WRITE')")
     public BookCommentDto update(BookCommentUpdateDto bookCommentUpdateDto) {
         var comment = bookCommentRepository.findById(bookCommentUpdateDto.getId())
                 .orElseThrow(() -> new EntityNotFoundException(
@@ -62,8 +71,11 @@ public class BookCommentServiceImpl implements BookCommentService {
 
     @Override
     @Transactional
+    @PreAuthorize("hasRole('ADMIN') or hasPermission(#id, 'ru.otus.hw.models.BookComment', 'DELETE')")
     public void deleteById(long id) {
         bookCommentRepository.deleteById(id);
+
+        aclPermissionService.deleteAcl(BookComment.class, id);
     }
 
     private static BookCommentDto toBookCommentDto(BookComment comment) {

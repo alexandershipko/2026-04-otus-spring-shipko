@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import ru.otus.hw.dto.BookCommentDto;
@@ -21,6 +22,9 @@ class BookCommentServiceImplTest {
 
     @Autowired
     private BookCommentService bookCommentService;
+
+    @MockitoBean
+    private AclPermissionService aclPermissionService;
 
     @DisplayName("должен загружать комментарий по id")
     @Test

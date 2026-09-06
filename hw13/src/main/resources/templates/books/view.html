@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<html lang="ru" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
 <head>
     <meta charset="UTF-8">
@@ -17,12 +17,14 @@
         <span th:text="${genre.name}"></span><span th:if="${!iter.last}">, </span>
     </span>
 </p>
-<a class="btn" th:href="@{/books/{id}/edit(id=${book.id})}" th:text="#{books.view.edit}">Edit</a>
-<form th:action="@{/books/{id}/delete(id=${book.id})}" method="post" style="display:inline">
-    <button type="submit" class="btn"
-            th:text="#{books.view.delete}"
-            th:onclick="|return confirm('#{books.view.deleteConfirm}')|">Delete</button>
-</form>
+<div sec:authorize="hasRole('ADMIN')">
+    <a class="btn" th:href="@{/books/{id}/edit(id=${book.id})}" th:text="#{books.view.edit}">Edit</a>
+    <form th:action="@{/books/{id}/delete(id=${book.id})}" method="post" style="display:inline">
+        <button type="submit" class="btn"
+                th:text="#{books.view.delete}"
+                th:onclick="|return confirm('#{books.view.deleteConfirm}')|">Delete</button>
+    </form>
+</div>
 
 <h2 th:text="#{books.view.comments}">Comments</h2>
 <p th:if="${#lists.isEmpty(comments)}" th:text="#{books.view.noComments}">No comments yet</p>

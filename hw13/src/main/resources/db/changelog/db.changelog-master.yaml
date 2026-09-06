@@ -11,3 +11,7 @@ databaseChangeLog:
       file: db/changelog/3.0/2026-08-16--0001-schema.yaml
   - include:
       file: db/changelog/3.0/2026-08-16--0002-data.yaml
+  - include:
+      file: db/changelog/4.0/2026-09-06--0001-acl-schema.yaml
+  - include:
+      file: db/changelog/5.0/2026-09-06--0001-user-role.yaml

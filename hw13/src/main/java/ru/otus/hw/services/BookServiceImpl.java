@@ -1,6 +1,8 @@
 package ru.otus.hw.services;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.acls.domain.BasePermission;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.otus.hw.dto.AuthorDto;
@@ -30,6 +32,8 @@ public class BookServiceImpl implements BookService {
 
     private final BookRepository bookRepository;
 
+    private final AclPermissionService aclPermissionService;
+
     @Override
     @Transactional(readOnly = true)
     public BookDto findById(long id) {
@@ -49,18 +53,23 @@ public class BookServiceImpl implements BookService {
 
     @Override
     @Transactional
+    @PreAuthorize("hasRole('ADMIN')")
     public BookDto insert(BookCreateDto bookCreateDto) {
         var genresIds = bookCreateDto.getGenreIds();
         var genres = findGenresOrThrow(genresIds);
         var author = findAuthorOrThrow(bookCreateDto.getAuthorId());
 
         var book = new Book(0, bookCreateDto.getTitle(), author, genres);
+        var savedBook = bookRepository.save(book);
 
-        return toBookDto(bookRepository.save(book));
+        aclPermissionService.grantOwnerPermissions(savedBook, BasePermission.WRITE, BasePermission.DELETE);
+
+        return toBookDto(savedBook);
     }
 
     @Override
     @Transactional
+    @PreAuthorize("hasRole('ADMIN') or hasPermission(#bookUpdateDto.id, 'ru.otus.hw.models.Book', 'WRITE')")
     public BookDto update(BookUpdateDto bookUpdateDto) {
         var genresIds = bookUpdateDto.getGenreIds();
         var genres = findGenresOrThrow(genresIds);
@@ -79,8 +88,11 @@ public class BookServiceImpl implements BookService {
 
     @Override
     @Transactional
+    @PreAuthorize("hasRole('ADMIN') or hasPermission(#id, 'ru.otus.hw.models.Book', 'DELETE')")
     public void deleteById(long id) {
         bookRepository.deleteById(id);
+
+        aclPermissionService.deleteAcl(Book.class, id);
     }
 
     private Author findAuthorOrThrow(long authorId) {
