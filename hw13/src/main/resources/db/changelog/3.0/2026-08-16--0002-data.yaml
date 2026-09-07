@@ -1,0 +1,23 @@
+databaseChangeLog:
+  - changeSet:
+      id: 2026-08-16--0002-insert-users
+      author: shipko
+      changes:
+        - insert:
+            tableName: users
+            columns:
+              - column:
+                  name: username
+                  value: user
+              - column:
+                  name: password
+                  value: $2a$10$QjugcyaeHz.oJ.VEmPnNSewq.gWvDlh92wx7m2r3PZEM3fH2rEqLy
+        - insert:
+            tableName: users
+            columns:
+              - column:
+                  name: username
+                  value: admin
+              - column:
+                  name: password
+                  value: $2a$10$5VA/BeXRwtcovA2pPYRI3uZcGKyUjslcH4vFB2kzzFUHhyJPpVXw.

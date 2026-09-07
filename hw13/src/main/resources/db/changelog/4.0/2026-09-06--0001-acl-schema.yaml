@@ -1,0 +1,164 @@
+databaseChangeLog:
+  - changeSet:
+      id: 2026-09-06--0001-acl-sid
+      author: shipko
+      changes:
+        - createTable:
+            tableName: acl_sid
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: principal
+                  type: boolean
+                  constraints:
+                    nullable: false
+              - column:
+                  name: sid
+                  type: varchar(100)
+                  constraints:
+                    nullable: false
+        - addUniqueConstraint:
+            tableName: acl_sid
+            columnNames: sid, principal
+            constraintName: unique_acl_sid
+
+  - changeSet:
+      id: 2026-09-06--0002-acl-class
+      author: shipko
+      changes:
+        - createTable:
+            tableName: acl_class
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: class
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+        - addUniqueConstraint:
+            tableName: acl_class
+            columnNames: class
+            constraintName: unique_acl_class
+
+  - changeSet:
+      id: 2026-09-06--0003-acl-object-identity
+      author: shipko
+      changes:
+        - createTable:
+            tableName: acl_object_identity
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: object_id_class
+                  type: bigint
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_acl_object_identity_class
+                    referencedTableName: acl_class
+                    referencedColumnNames: id
+              - column:
+                  name: object_id_identity
+                  type: bigint
+                  constraints:
+                    nullable: false
+              - column:
+                  name: parent_object
+                  type: bigint
+                  constraints:
+                    foreignKeyName: fk_acl_object_identity_parent
+                    referencedTableName: acl_object_identity
+                    referencedColumnNames: id
+              - column:
+                  name: owner_sid
+                  type: bigint
+                  constraints:
+                    foreignKeyName: fk_acl_object_identity_owner
+                    referencedTableName: acl_sid
+                    referencedColumnNames: id
+              - column:
+                  name: entries_inheriting
+                  type: boolean
+                  constraints:
+                    nullable: false
+        - addUniqueConstraint:
+            tableName: acl_object_identity
+            columnNames: object_id_class, object_id_identity
+            constraintName: unique_acl_object_identity
+
+  - changeSet:
+      id: 2026-09-06--0004-acl-entry
+      author: shipko
+      changes:
+        - createTable:
+            tableName: acl_entry
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: acl_object_identity
+                  type: bigint
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_acl_entry_object_identity
+                    referencedTableName: acl_object_identity
+                    referencedColumnNames: id
+              - column:
+                  name: ace_order
+                  type: int
+                  constraints:
+                    nullable: false
+              - column:
+                  name: sid
+                  type: bigint
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_acl_entry_sid
+                    referencedTableName: acl_sid
+                    referencedColumnNames: id
+              - column:
+                  name: mask
+                  type: int
+                  constraints:
+                    nullable: false
+              - column:
+                  name: granting
+                  type: boolean
+                  constraints:
+                    nullable: false
+              - column:
+                  name: audit_success
+                  type: boolean
+                  constraints:
+                    nullable: false
+              - column:
+                  name: audit_failure
+                  type: boolean
+                  constraints:
+                    nullable: false
+        - addUniqueConstraint:
+            tableName: acl_entry
+            columnNames: acl_object_identity, ace_order
+            constraintName: unique_acl_entry
