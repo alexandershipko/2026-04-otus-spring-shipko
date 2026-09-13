@@ -1,0 +1,23 @@
+package ru.otus.hw.batch.processor;
+
+import lombok.RequiredArgsConstructor;
+import org.bson.types.ObjectId;
+import org.springframework.batch.item.ItemProcessor;
+import org.springframework.lang.NonNull;
+import ru.otus.hw.batch.cache.MigrationIdCache;
+import ru.otus.hw.models.target.Author;
+
+@RequiredArgsConstructor
+public class AuthorItemProcessor implements ItemProcessor<ru.otus.hw.models.source.Author, Author> {
+
+    private final MigrationIdCache idCache;
+
+    @Override
+    public Author process(@NonNull ru.otus.hw.models.source.Author source) {
+        var targetId = new ObjectId().toHexString();
+        idCache.putAuthorId(source.getId(), targetId);
+
+        return new Author(targetId, source.getFullName());
+    }
+
+}

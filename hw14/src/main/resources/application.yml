@@ -1,0 +1,32 @@
+spring:
+  shell:
+    interactive:
+      enabled: true
+    command:
+      version:
+        enabled: false
+
+  batch:
+    job:
+      enabled: false
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+
+  datasource:
+    url: jdbc:h2:mem:sourcedb
+
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.yaml
+
+  data:
+    mongodb:
+      port: 0 # when flapdoodle using
+      database: library-migration
+
+de:
+  flapdoodle:
+    mongodb:
+      embedded:
+        version: 7.0.14
