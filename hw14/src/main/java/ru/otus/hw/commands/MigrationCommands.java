@@ -15,8 +15,11 @@ import org.springframework.shell.standard.ShellMethod;
 public class MigrationCommands {
 
     private final Job migrationJob;
+
     private final JobLauncher jobLauncher;
+
     private final JobOperator jobOperator;
+
     private final JobExplorer jobExplorer;
 
     @ShellMethod(value = "Запустить миграцию данных из H2 в MongoDB", key = "migrate")

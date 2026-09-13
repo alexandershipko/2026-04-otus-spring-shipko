@@ -19,7 +19,9 @@ import org.springframework.stereotype.Component;
 public class MigrationLockJobListener implements JobExecutionListener {
 
     private static final String COLLECTION = "migration_locks";
+
     private static final String LOCK_ID = "migrationJob";
+
     private static final String ACQUIRED_KEY = "migration.lock.acquired";
 
     private final MongoTemplate mongoTemplate;
@@ -40,24 +42,20 @@ public class MigrationLockJobListener implements JobExecutionListener {
         if (!execution.getExecutionContext().containsKey(ACQUIRED_KEY)) {
             return;
         }
-
         try {
             var result = mongoTemplate.remove(
                     Query.query(Criteria.where("_id").is(LOCK_ID).and("executionId").is(execution.getId())),
                     COLLECTION);
-
             if (!result.wasAcknowledged()) {
                 log.error("Не подтверждено снятие блокировки миграции для выполнения {}. "
                         + "Проверьте коллекцию {} перед следующим запуском", execution.getId(), COLLECTION);
                 return;
             }
-
             if (result.getDeletedCount() == 0) {
                 log.warn("Блокировка миграции для выполнения {} отсутствует или принадлежит другому владельцу. "
                         + "Коллекция: {}", execution.getId(), COLLECTION);
                 return;
             }
-
             execution.getExecutionContext().remove(ACQUIRED_KEY);
         } catch (DataAccessException ex) {
             log.error("Не удалось снять блокировку миграции для выполнения {}. "

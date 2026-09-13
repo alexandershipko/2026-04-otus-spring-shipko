@@ -49,10 +49,18 @@ public class MigrationJobConfig {
     private static final String MIGRATION_JOB_NAME = "migrationJob";
 
     private final JobRepository jobRepository;
+
     private final PlatformTransactionManager transactionManager;
+
     private final MongoTemplate mongoTemplate;
+
     private final MigrationIdRegistry idRegistry;
+
     private final MigrationProperties migrationProperties;
+
+    private final MigrationLockJobListener migrationLockJobListener;
+
+    private final CacheResetJobListener cacheResetJobListener;
 
     //Author
     @Bean
@@ -161,9 +169,7 @@ public class MigrationJobConfig {
     public Job migrationJob(Step authorMigrationStep,
                              Step genreMigrationStep,
                              Step bookMigrationStep,
-                             Step bookCommentMigrationStep,
-                             MigrationLockJobListener migrationLockJobListener,
-                             CacheResetJobListener cacheResetJobListener) {
+                             Step bookCommentMigrationStep) {
         return new JobBuilder(MIGRATION_JOB_NAME, jobRepository)
                 .incrementer(new RunIdIncrementer())
                 .listener(migrationLockJobListener)
