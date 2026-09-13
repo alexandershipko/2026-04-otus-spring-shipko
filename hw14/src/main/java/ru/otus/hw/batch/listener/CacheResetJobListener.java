@@ -6,13 +6,16 @@ import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobExecutionListener;
 import org.springframework.batch.core.explore.JobExplorer;
 import org.springframework.lang.NonNull;
-import ru.otus.hw.batch.cache.MigrationIdCache;
+import org.springframework.stereotype.Component;
+import ru.otus.hw.batch.cache.MigrationIdRegistry;
 
+@Component
 @Slf4j
 @RequiredArgsConstructor
 public class CacheResetJobListener implements JobExecutionListener {
 
-    private final MigrationIdCache idCache;
+    private final MigrationIdRegistry idRegistry;
+
     private final JobExplorer jobExplorer;
 
     @Override
@@ -25,7 +28,7 @@ public class CacheResetJobListener implements JobExecutionListener {
         }
 
         log.info("Новый запуск job, очищаю кэш id");
-        idCache.clear();
+        idRegistry.reset();
     }
 
 }
