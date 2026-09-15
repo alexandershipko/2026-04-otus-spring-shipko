@@ -4,7 +4,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.StepScope;
+import org.springframework.batch.core.job.builder.FlowBuilder;
 import org.springframework.batch.core.job.builder.JobBuilder;
+import org.springframework.batch.core.job.flow.Flow;
 import org.springframework.batch.core.launch.support.RunIdIncrementer;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
@@ -16,6 +18,7 @@ import org.springframework.batch.item.data.builder.MongoItemWriterBuilder;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -170,14 +173,21 @@ public class MigrationJobConfig {
                              Step genreMigrationStep,
                              Step bookMigrationStep,
                              Step bookCommentMigrationStep) {
+        Flow authorGenreFlow = new FlowBuilder<Flow>("authorGenreFlow")
+                .split(new SimpleAsyncTaskExecutor("migration-"))
+                .add(
+                        new FlowBuilder<Flow>("authorFlow").start(authorMigrationStep).build(),
+                        new FlowBuilder<Flow>("genreFlow").start(genreMigrationStep).build())
+                .build();
+
         return new JobBuilder(MIGRATION_JOB_NAME, jobRepository)
                 .incrementer(new RunIdIncrementer())
                 .listener(migrationLockJobListener)
                 .listener(cacheResetJobListener)
-                .start(authorMigrationStep)
-                .next(genreMigrationStep)
+                .start(authorGenreFlow)
                 .next(bookMigrationStep)
                 .next(bookCommentMigrationStep)
+                .end()
                 .build();
     }
 
