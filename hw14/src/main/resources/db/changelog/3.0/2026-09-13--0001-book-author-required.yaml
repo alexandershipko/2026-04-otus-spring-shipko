@@ -1,0 +1,9 @@
+databaseChangeLog:
+  - changeSet:
+      id: 2026-09-13--0001-book-author-required
+      author: shipko
+      changes:
+        - addNotNullConstraint:
+            tableName: books
+            columnName: author_id
+            columnDataType: bigint
