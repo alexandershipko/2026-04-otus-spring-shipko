@@ -1,5 +1,7 @@
 package ru.otus.hw.config;
 
+import java.util.Collection;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.integration.dsl.IntegrationFlow;
@@ -30,6 +32,9 @@ public class IntegrationConfig {
     // Максимальное число сообщений, забираемых поллером за один опрос
     private static final int POLLER_MAX_MESSAGES = 2;
 
+    // Время ожидания недостающих яиц кладки, после которого неполная группа удаляется из агрегатора, мс
+    private static final long AGGREGATOR_GROUP_TIMEOUT_MS = 10_000;
+
     @Bean
     public MessageChannelSpec<?, ?> eggsChannel() {
         return MessageChannels.queue(EGGS_QUEUE_CAPACITY);
@@ -50,12 +55,18 @@ public class IntegrationConfig {
                                              PupationService pupationService,
                                              EmergenceService emergenceService) {
         return IntegrationFlow.from(eggsChannel())
+                // Пустую кладку сразу возвращаем как пустой результат, иначе агрегатор никогда не ответит
+                .<Collection<?>, Boolean>route(Collection::isEmpty, m -> m
+                        .subFlowMapping(true, sf -> sf.channel(butterfliesChannel()))
+                        .defaultOutputToParentFlow())
                 .split()
                 .handle(hatchService, "hatch")
                 .gateway("larvaFlow.input")
                 .handle(pupationService, "pupate")
                 .handle(emergenceService, "emerge")
-                .aggregate()
+                .aggregate(a -> a
+                        .groupTimeout(AGGREGATOR_GROUP_TIMEOUT_MS)
+                        .expireGroupsUponTimeout(true))
                 .channel(butterfliesChannel())
                 .get();
     }
