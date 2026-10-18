@@ -1,0 +1,26 @@
+databaseChangeLog:
+  - changeSet:
+      id: 2026-09-06--0001-users-add-role
+      author: shipko
+      changes:
+        - addColumn:
+            tableName: users
+            columns:
+              - column:
+                  name: role
+                  type: varchar(20)
+                  defaultValue: USER
+                  constraints:
+                    nullable: false
+
+  - changeSet:
+      id: 2026-09-06--0002-users-set-admin-role
+      author: shipko
+      changes:
+        - update:
+            tableName: users
+            columns:
+              - column:
+                  name: role
+                  value: ADMIN
+            where: username = 'admin'

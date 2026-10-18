@@ -1,0 +1,32 @@
+databaseChangeLog:
+  - changeSet:
+      id: 2026-06-21--0001-insert-book-comments
+      author: shipko
+      changes:
+        - insert:
+            tableName: book_comments
+            columns:
+              - column:
+                  name: text
+                  value: Comment_1
+              - column:
+                  name: book_id
+                  valueNumeric: 1
+        - insert:
+            tableName: book_comments
+            columns:
+              - column:
+                  name: text
+                  value: Comment_2
+              - column:
+                  name: book_id
+                  valueNumeric: 1
+        - insert:
+            tableName: book_comments
+            columns:
+              - column:
+                  name: text
+                  value: Comment_3
+              - column:
+                  name: book_id
+                  valueNumeric: 2
