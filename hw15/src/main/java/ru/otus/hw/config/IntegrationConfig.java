@@ -21,9 +21,18 @@ public class IntegrationConfig {
     // Последний возраст гусеницы (instar), после которого она окукливается
     private static final int MAX_INSTAR = 5;
 
+    // Максимальное число кладок, ожидающих обработки в очереди
+    private static final int EGGS_QUEUE_CAPACITY = 10;
+
+    // Интервал опроса очереди кладок поллером, мс
+    private static final long POLLER_RATE_MS = 100;
+
+    // Максимальное число сообщений, забираемых поллером за один опрос
+    private static final int POLLER_MAX_MESSAGES = 2;
+
     @Bean
     public MessageChannelSpec<?, ?> eggsChannel() {
-        return MessageChannels.queue(10);
+        return MessageChannels.queue(EGGS_QUEUE_CAPACITY);
     }
 
     @Bean
@@ -33,7 +42,7 @@ public class IntegrationConfig {
 
     @Bean(name = PollerMetadata.DEFAULT_POLLER)
     public PollerSpec poller() {
-        return Pollers.fixedRate(100).maxMessagesPerPoll(2);
+        return Pollers.fixedRate(POLLER_RATE_MS).maxMessagesPerPoll(POLLER_MAX_MESSAGES);
     }
 
     @Bean
